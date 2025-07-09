@@ -1,0 +1,53 @@
+services:
+  oracle-db:
+    image: gvenzl/oracle-xe:latest
+    container_name: campus-trade-oracle
+    environment:
+      ORACLE_PASSWORD: CampusTrade123!
+      APP_USER: CAMPUS_TRADE_USER
+      APP_USER_PASSWORD: CampusTrade123!
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+      - ./Database/init-oracle.sql:/container-entrypoint-initdb.d/init-oracle.sql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "echo 'SELECT 1 FROM DUAL;' | sqlplus -L -S sys/CampusTrade123!@//localhost:1521/XEPDB1 as sysdba | grep -q '^1'",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  campus-trade-api:
+    build:
+      context: ./Backend/CampusTradeSystem
+      dockerfile: CampusTrade.API/Dockerfile
+    container_name: campus-trade-api
+    ports:
+      - "5000:8080"
+    depends_on:
+      - oracle-db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Data Source=oracle-db:1521/XEPDB1;User Id=CAMPUS_TRADE_USER;Password=CampusTrade123!;
+    restart: unless-stopped
+
+  campus-trade-web:
+    build:
+      context: ./Frontend/campus-trade-web
+      dockerfile: Dockerfile
+    container_name: campus-trade-web
+    ports:
+      - "3000:80"
+    depends_on:
+      - campus-trade-api
+    environment:
+      - VITE_API_BASE_URL=http://localhost:5000
+    restart: unless-stopped
+
+volumes:
+  oracle_data:
