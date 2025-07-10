@@ -1,6 +1,13 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { authApi, type LoginData, type RegisterData } from '@/services/api'
+import {
+  authApi,
+  type LoginData,
+  type RegisterData,
+  type TokenResponse,
+  type UserInfo,
+  type ApiResponse,
+} from '@/services/api'
 
 export interface User {
   userId?: number
@@ -9,49 +16,74 @@ export interface User {
   fullName?: string
   phone?: string
   studentId?: string
+  creditScore?: number
 }
 
 export const useUserStore = defineStore('user', () => {
   const user = ref<User | null>(null)
   const token = ref<string>('')
+  const refreshToken = ref<string>('')
   const isLoggedIn = ref<boolean>(false)
 
   // 初始化用户状态
   const initializeAuth = () => {
     const savedToken = localStorage.getItem('token')
+    const savedRefreshToken = localStorage.getItem('refreshToken')
     const savedUser = localStorage.getItem('user')
 
     if (savedToken && savedUser) {
       token.value = savedToken
+      refreshToken.value = savedRefreshToken || ''
       user.value = JSON.parse(savedUser)
       isLoggedIn.value = true
     }
   }
 
   // 登录
-  const login = async (loginData: LoginData) => {
+  const login = async (loginData: {
+    username: string
+    password: string
+    remember_me?: boolean
+  }) => {
     try {
-      const response = await authApi.login(loginData)
+      const response: ApiResponse<TokenResponse> = await authApi.login(loginData)
 
-      if (response.success) {
-        token.value = response.data.token
+      if (response.success && response.data) {
+        const tokenData = response.data
+
+        // 保存token
+        token.value = tokenData.access_token
+        refreshToken.value = tokenData.refresh_token
+
+        // 保存用户信息
         user.value = {
-          username: response.data.username,
-          email: response.data.email,
-          fullName: response.data.fullName,
+          userId: tokenData.user_id,
+          username: tokenData.username,
+          email: tokenData.email,
+          studentId: tokenData.student_id,
+          creditScore: tokenData.credit_score,
         }
+
         isLoggedIn.value = true
 
         // 保存到本地存储
         localStorage.setItem('token', token.value)
+        localStorage.setItem('refreshToken', refreshToken.value)
         localStorage.setItem('user', JSON.stringify(user.value))
 
-        return { success: true, message: response.message }
+        return { success: true, message: response.message || '登录成功' }
       }
 
-      return { success: false, message: response.message }
+      return { success: false, message: response.message || '登录失败' }
     } catch (error: any) {
-      const message = error.response?.data?.message || '登录失败，请重试'
+      let message = '登录失败，请重试'
+
+      if (error.response?.data?.message) {
+        message = error.response.data.message
+      } else if (error.response?.data?.success === false) {
+        message = error.response.data.message || '登录失败'
+      }
+
       return { success: false, message }
     }
   }
@@ -59,51 +91,117 @@ export const useUserStore = defineStore('user', () => {
   // 注册
   const register = async (registerData: RegisterData) => {
     try {
-      const response = await authApi.register(registerData)
+      const response: ApiResponse<UserInfo> = await authApi.register(registerData)
 
       if (response.success) {
-        return { success: true, message: response.message }
+        return { success: true, message: response.message || '注册成功' }
       }
 
-      return { success: false, message: response.message }
+      return { success: false, message: response.message || '注册失败' }
     } catch (error: any) {
-      const message = error.response?.data?.message || '注册失败，请重试'
+      let message = '注册失败，请重试'
+
+      if (error.response?.data?.message) {
+        message = error.response.data.message
+      } else if (error.response?.data?.success === false) {
+        message = error.response.data.message || '注册失败'
+      }
+
+      return { success: false, message }
+    }
+  }
+
+  // 验证学生身份
+  const validateStudent = async (studentId: string, name: string) => {
+    try {
+      const response = await authApi.validateStudent(studentId, name)
+
+      if (response.success && response.data) {
+        return {
+          success: true,
+          message: response.message || '验证成功',
+          isValid: response.data.isValid,
+        }
+      }
+
+      return { success: false, message: response.message || '验证失败' }
+    } catch (error: any) {
+      let message = '验证失败，请重试'
+
+      if (error.response?.data?.message) {
+        message = error.response.data.message
+      }
+
       return { success: false, message }
     }
   }
 
   // 登出
-  const logout = () => {
-    user.value = null
-    token.value = ''
-    isLoggedIn.value = false
+  const logout = async () => {
+    try {
+      if (refreshToken.value) {
+        await authApi.logout(refreshToken.value)
+      }
+    } catch (error) {
+      console.error('登出请求失败:', error)
+      // 即使请求失败也要清除本地状态
+    } finally {
+      // 清除状态
+      user.value = null
+      token.value = ''
+      refreshToken.value = ''
+      isLoggedIn.value = false
 
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
+      // 清除本地存储
+      localStorage.removeItem('token')
+      localStorage.removeItem('refreshToken')
+      localStorage.removeItem('user')
+    }
   }
 
   // 获取用户信息
   const fetchUserInfo = async (username: string) => {
     try {
-      const response: any = await authApi.getUser(username)
-      if (response.success) {
-        user.value = response.data
+      const response: ApiResponse<UserInfo> = await authApi.getUser(username)
+
+      if (response.success && response.data) {
+        const userData = response.data
+        user.value = {
+          userId: userData.userId,
+          username: userData.username,
+          email: userData.email,
+          fullName: userData.fullName,
+          phone: userData.phone,
+          studentId: userData.studentId,
+          creditScore: userData.creditScore,
+        }
         localStorage.setItem('user', JSON.stringify(user.value))
+
+        return { success: true, message: response.message || '获取用户信息成功' }
       }
-      return response
+
+      return { success: false, message: response.message || '获取用户信息失败' }
     } catch (error: any) {
       console.error('获取用户信息失败:', error)
-      return { success: false, message: '获取用户信息失败' }
+      let message = '获取用户信息失败'
+
+      if (error.response?.data?.message) {
+        message = error.response.data.message
+      }
+
+      return { success: false, message }
     }
   }
 
   return {
     user,
     token,
+    refreshToken,
     isLoggedIn,
     initializeAuth,
     login,
     register,
+    validateStudent,
     logout,
     fetchUserInfo,
   }
