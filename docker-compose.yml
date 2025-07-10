@@ -28,7 +28,7 @@ services:
       dockerfile: CampusTrade.API/Dockerfile
     container_name: campus-trade-api
     ports:
-      - "5000:8080"
+      - "5085:8080"
     depends_on:
       - oracle-db
     environment:
@@ -40,13 +40,13 @@ services:
     build:
       context: ./Frontend/campus-trade-web
       dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=http://localhost:5085
     container_name: campus-trade-web
     ports:
       - "3000:80"
     depends_on:
       - campus-trade-api
-    environment:
-      - VITE_API_BASE_URL=http://localhost:5000
     restart: unless-stopped
 
 volumes:
