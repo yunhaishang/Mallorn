@@ -1,0 +1,95 @@
+name: PR Code Quality Check
+
+on:
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened]
+
+jobs:
+  code-quality-check:
+    runs-on: ubuntu-latest
+    name: Code Quality & Formatting Check
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: Frontend/campus-trade-web/package-lock.json
+
+      # .NET Code Quality Checks
+      - name: Restore .NET dependencies
+        run: dotnet restore Backend/CampusTradeSystem/CampusTradeSystem.sln
+
+      - name: Check .NET code formatting
+        run: |
+          dotnet format Backend/CampusTradeSystem/CampusTradeSystem.sln --verify-no-changes --verbosity diagnostic
+
+      - name: Run .NET code analysis
+        run: |
+          dotnet build Backend/CampusTradeSystem/CampusTradeSystem.sln --configuration Release --no-restore --verbosity minimal
+          dotnet test Backend/CampusTradeSystem/CampusTrade.Tests/CampusTrade.Tests.csproj --no-build --configuration Release --logger trx --collect:"XPlat Code Coverage"
+
+      # Frontend Code Quality Checks
+      - name: Install frontend dependencies
+        working-directory: Frontend/campus-trade-web
+        run: npm ci
+
+      - name: Check frontend code formatting (Prettier)
+        working-directory: Frontend/campus-trade-web
+        run: |
+          npx prettier --check "src/**/*.{js,ts,vue,json,css,md}"
+
+      - name: Run ESLint
+        working-directory: Frontend/campus-trade-web
+        run: |
+          npx eslint "src/**/*.{js,ts,vue}" --max-warnings 0
+
+      - name: Run TypeScript type checking
+        working-directory: Frontend/campus-trade-web
+        run: |
+          npx vue-tsc --noEmit
+
+      - name: Run frontend tests
+        working-directory: Frontend/campus-trade-web
+        run: |
+          npm run test:unit
+
+      # Security Checks
+      - name: Run .NET security scan
+        run: |
+          dotnet list Backend/CampusTradeSystem/CampusTrade.API/CampusTrade.API.csproj package --vulnerable --include-transitive
+
+      - name: Run frontend security scan
+        working-directory: Frontend/campus-trade-web
+        run: |
+          npm audit --audit-level moderate
+
+      # Generate summary report
+      - name: Generate quality report
+        if: always()
+        run: |
+          echo "## 代码质量检查报告" >> $GITHUB_STEP_SUMMARY
+          echo "### 检查项目" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ .NET 代码格式化检查" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 前端代码格式化检查 (Prettier)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ ESLint 代码质量检查" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ TypeScript 类型检查" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 单元测试" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ 安全漏洞扫描" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 如果检查失败" >> $GITHUB_STEP_SUMMARY
+          echo "1. **格式化问题**: 在本地运行 \`dotnet format\` 或 \`npm run format\`" >> $GITHUB_STEP_SUMMARY
+          echo "2. **ESLint 问题**: 运行 \`npm run lint:fix\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. **测试失败**: 检查测试日志并修复相关问题" >> $GITHUB_STEP_SUMMARY

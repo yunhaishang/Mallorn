@@ -64,7 +64,7 @@ public class JwtValidationMiddleware
                         }
                     }
                     
-                    // 记录Token使用情况（可选，用于审计）
+                    // 记录Token使用情况（用于审计）
                     var userId = jwtToken.Claims.FirstOrDefault(x => x.Type == "sub")?.Value;
                     if (!string.IsNullOrEmpty(userId))
                     {
