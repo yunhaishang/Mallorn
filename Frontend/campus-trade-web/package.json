@@ -11,7 +11,9 @@
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
-    "format": "prettier --write src/"
+    "lint:check": "eslint .",
+    "format": "prettier --write \"src/**/*.{js,ts,vue,json,css,md}\" && eslint \"src/**/*.{js,ts,vue}\" --fix",
+    "format:check": "prettier --check \"src/**/*.{js,ts,vue,json,css,md}\""
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",

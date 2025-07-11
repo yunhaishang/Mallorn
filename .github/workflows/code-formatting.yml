@@ -1,0 +1,95 @@
+name: Code Formatting
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  format-dotnet:
+    runs-on: ubuntu-latest
+    name: Format .NET Code
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restore dependencies
+        run: dotnet restore Backend/CampusTradeSystem/CampusTradeSystem.sln
+
+      - name: Format code
+        run: |
+          dotnet format Backend/CampusTradeSystem/CampusTradeSystem.sln --verbosity diagnostic
+
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit formatted code
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Auto-format code with dotnet format"
+          git push
+
+  format-frontend:
+    runs-on: ubuntu-latest
+    name: Format Frontend Code
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: Frontend/campus-trade-web/package-lock.json
+
+      - name: Install dependencies
+        working-directory: Frontend/campus-trade-web
+        run: npm ci
+
+      - name: Format code with Prettier
+        working-directory: Frontend/campus-trade-web
+        run: |
+          npx prettier --write "src/**/*.{js,ts,vue,json,css,md}"
+          npx eslint "src/**/*.{js,ts,vue}" --fix
+
+      - name: Check for changes
+        id: verify-changed-files
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit formatted code
+        if: steps.verify-changed-files.outputs.changed == 'true'
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Auto-format frontend code with Prettier & ESLint"
+          git push
