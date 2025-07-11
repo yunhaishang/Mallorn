@@ -3,8 +3,7 @@ name: Code Formatting
 on:
   push:
     branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
+  # 移除 pull_request 触发，避免与 pr-code-check.yml 冲突
 
 jobs:
   format-dotnet:
