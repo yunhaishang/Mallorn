@@ -19,13 +19,14 @@ namespace CampusTrade.Tests.UnitTests.Services;
 public class TokenServiceTests : IDisposable
 {
     private readonly Mock<IMemoryCache> _mockCache;
+    private readonly Mock<ICacheEntry> _mockCacheEntry;
     private readonly Mock<ILogger<TokenService>> _mockLogger;
     private readonly TokenService _tokenService;
     private readonly JwtOptions _jwtOptions;
 
     public TokenServiceTests()
     {
-        _mockCache = MockHelper.CreateMockMemoryCache();
+        (_mockCache, _mockCacheEntry) = MockHelper.CreateMockMemoryCacheWithEntry();
         _mockLogger = MockHelper.CreateMockLogger<TokenService>();
         
         _jwtOptions = new JwtOptions
@@ -449,7 +450,13 @@ public class TokenServiceTests : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        _mockCache.Verify(x => x.Set($"blacklist:{jti}", true, It.IsAny<TimeSpan>()), Times.Once);
+        
+        // 验证CreateEntry被调用，这是Set()方法内部会调用的
+        _mockCache.Verify(x => x.CreateEntry($"blacklist:{jti}"), Times.Once);
+        
+        // 验证缓存条目的值和过期时间被设置
+        _mockCacheEntry.VerifySet(x => x.Value = true);
+        _mockCacheEntry.VerifySet(x => x.AbsoluteExpirationRelativeToNow = It.IsAny<TimeSpan>());
     }
 
     [Fact]
@@ -464,7 +471,9 @@ public class TokenServiceTests : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        _mockCache.Verify(x => x.Set(It.IsAny<object>(), It.IsAny<object>(), It.IsAny<TimeSpan>()), Times.Never);
+        
+        // 验证CreateEntry没有被调用，因为Token已过期
+        _mockCache.Verify(x => x.CreateEntry(It.IsAny<object>()), Times.Never);
     }
 
     #endregion
