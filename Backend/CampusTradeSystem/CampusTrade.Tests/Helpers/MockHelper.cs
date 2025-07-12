@@ -67,12 +67,34 @@ public static class MockHelper
     public static Mock<IMemoryCache> CreateMockMemoryCache()
     {
         var mockCache = new Mock<IMemoryCache>();
-        var cacheEntry = new Mock<ICacheEntry>();
+        var mockCacheEntry = new Mock<ICacheEntry>();
         
+        // 设置 ICacheEntry 的基本属性
+        mockCacheEntry.SetupAllProperties();
+        
+        // 设置 CreateEntry 方法返回 mock 的 ICacheEntry
         mockCache.Setup(x => x.CreateEntry(It.IsAny<object>()))
-               .Returns(cacheEntry.Object);
+                 .Returns(mockCacheEntry.Object);
 
         return mockCache;
+    }
+
+    /// <summary>
+    /// 创建带有验证功能的Mock IMemoryCache
+    /// </summary>
+    public static (Mock<IMemoryCache> mockCache, Mock<ICacheEntry> mockCacheEntry) CreateMockMemoryCacheWithEntry()
+    {
+        var mockCache = new Mock<IMemoryCache>();
+        var mockCacheEntry = new Mock<ICacheEntry>();
+        
+        // 设置 ICacheEntry 的基本属性
+        mockCacheEntry.SetupAllProperties();
+        
+        // 设置 CreateEntry 方法返回 mock 的 ICacheEntry
+        mockCache.Setup(x => x.CreateEntry(It.IsAny<object>()))
+                 .Returns(mockCacheEntry.Object);
+
+        return (mockCache, mockCacheEntry);
     }
 
     /// <summary>
