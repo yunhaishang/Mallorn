@@ -5,6 +5,10 @@ on:
     branches: [master, develop]
   # 移除 pull_request 触发，避免与 pr-code-check.yml 冲突
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   format-dotnet:
     runs-on: ubuntu-latest

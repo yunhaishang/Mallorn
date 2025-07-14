@@ -67,7 +67,7 @@ const getDeviceName = (): string => {
 }
 
 // 后端API响应格式
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   message: string
   data?: T
