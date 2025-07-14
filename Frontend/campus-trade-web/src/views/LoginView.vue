@@ -255,7 +255,7 @@
         studentValidationFailed.value = true
         ElMessage.error(result.message || '学生身份验证失败')
       }
-    } catch (error) {
+    } catch {
       studentValidationFailed.value = true
       ElMessage.error('验证过程中发生错误')
     } finally {
@@ -283,7 +283,7 @@
           } else {
             ElMessage.error(result.message)
           }
-        } catch (error) {
+        } catch {
           ElMessage.error('登录失败，请重试')
         } finally {
           loading.value = false
@@ -308,7 +308,7 @@
           } else {
             ElMessage.error(result.message)
           }
-        } catch (error) {
+        } catch {
           ElMessage.error('注册失败，请重试')
         } finally {
           registerLoading.value = false
