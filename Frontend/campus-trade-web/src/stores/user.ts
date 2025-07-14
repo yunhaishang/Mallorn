@@ -99,12 +99,23 @@ export const useUserStore = defineStore('user', () => {
 
       return { success: false, message: response.message || '注册失败' }
     } catch (error: any) {
+      console.error('注册错误详情:', error)
       let message = '注册失败，请重试'
 
-      if (error.response?.data?.message) {
-        message = error.response.data.message
-      } else if (error.response?.data?.success === false) {
-        message = error.response.data.message || '注册失败'
+      // 尝试从不同的错误响应结构中提取错误消息
+      if (error.response?.data) {
+        const errorData = error.response.data
+        if (typeof errorData === 'string') {
+          message = errorData
+        } else if (errorData.message) {
+          message = errorData.message
+        } else if (errorData.error) {
+          message = errorData.error
+        } else if (errorData.details) {
+          message = errorData.details
+        }
+      } else if (error.message) {
+        message = error.message
       }
 
       return { success: false, message }

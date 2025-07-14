@@ -29,12 +29,16 @@ api.interceptors.response.use(
     return response.data
   },
   (error: AxiosError) => {
+    console.error('API请求错误:', error)
+
     if (error.response?.status === 401) {
       // 清除 token 并跳转到登录页
       localStorage.removeItem('token')
       localStorage.removeItem('user')
       window.location.href = '/login'
     }
+
+    // 保留原始错误信息，让上层处理
     return Promise.reject(error)
   }
 )

@@ -109,7 +109,7 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.IsLocked)
                     .HasColumnName("IS_LOCKED")
-                    .HasDefaultValue(false);
+                    .HasDefaultValue(0);
 
                 entity.Property(e => e.LockoutEnd)
                     .HasColumnName("LOCKOUT_END");
@@ -120,7 +120,7 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.TwoFactorEnabled)
                     .HasColumnName("TWO_FACTOR_ENABLED")
-                    .HasDefaultValue(false);
+                    .HasDefaultValue(0);
 
                 entity.Property(e => e.PasswordChangedAt)
                     .HasColumnName("PASSWORD_CHANGED_AT");
@@ -132,7 +132,7 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.EmailVerified)
                     .HasColumnName("EMAIL_VERIFIED")
-                    .HasDefaultValue(false);
+                    .HasDefaultValue(0);
 
                 entity.Property(e => e.EmailVerificationToken)
                     .HasColumnName("EMAIL_VERIFICATION_TOKEN")
