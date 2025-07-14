@@ -231,8 +231,8 @@ public class SecurityMiddleware
         var maliciousPatterns = new[]
         {
             "../", "..\\", ".env", "wp-admin", "admin.php", "phpmyadmin",
-            "sql", "union", "select", "insert", "delete", "drop", "script",
-            "eval(", "javascript:", "vbscript:", "<script"
+            " sql ", " union ", " select ", " insert ", " delete ", " drop ", 
+            "eval(", "javascript:", "vbscript:", "<script", "--", "/*", "*/"
         };
 
         var lowerPath = path.ToLower();

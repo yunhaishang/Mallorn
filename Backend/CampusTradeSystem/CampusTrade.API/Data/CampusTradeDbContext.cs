@@ -21,6 +21,7 @@ namespace CampusTrade.API.Data
             // 配置学生表
             modelBuilder.Entity<Student>(entity =>
             {
+                entity.ToTable("STUDENTS");
                 entity.HasKey(e => e.StudentId);
                 
                 entity.Property(e => e.StudentId)
@@ -41,6 +42,7 @@ namespace CampusTrade.API.Data
             // 配置用户表
             modelBuilder.Entity<User>(entity =>
             {
+                entity.ToTable("USERS");
                 entity.HasKey(e => e.UserId);
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.StudentId).IsUnique();
@@ -162,6 +164,7 @@ namespace CampusTrade.API.Data
             // 配置RefreshToken表
             modelBuilder.Entity<RefreshToken>(entity =>
             {
+                entity.ToTable("REFRESH_TOKENS");
                 entity.HasKey(e => e.Id);
                 
                 entity.Property(e => e.Id)

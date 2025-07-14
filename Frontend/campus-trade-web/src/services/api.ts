@@ -20,7 +20,7 @@ api.interceptors.request.use(
   },
   (error: AxiosError) => {
     return Promise.reject(error)
-  },
+  }
 )
 
 // 响应拦截器
@@ -36,7 +36,7 @@ api.interceptors.response.use(
       window.location.href = '/login'
     }
     return Promise.reject(error)
-  },
+  }
 )
 
 // 生成设备ID
@@ -131,7 +131,7 @@ export interface UserInfo {
 export const authApi = {
   // 登录
   login: (
-    loginData: Omit<LoginData, 'device_id' | 'device_name'>,
+    loginData: Omit<LoginData, 'device_id' | 'device_name'>
   ): Promise<ApiResponse<TokenResponse>> => {
     const requestData: LoginData = {
       ...loginData,
@@ -155,10 +155,10 @@ export const authApi = {
   // 验证学生身份
   validateStudent: (
     studentId: string,
-    name: string,
+    name: string
   ): Promise<ApiResponse<{ isValid: boolean; studentId: string }>> => {
     return api.post('/api/auth/validate-student', {
-      studentId,
+      student_id: studentId,
       name,
     })
   },
