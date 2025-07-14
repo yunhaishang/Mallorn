@@ -69,34 +69,48 @@ namespace CampusTrade.API.Controllers;
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
+            _logger.LogInformation("收到注册请求，邮箱: {Email}, 学号: {StudentId}, 姓名: {Name}", 
+                registerDto?.Email ?? "null", 
+                registerDto?.StudentId ?? "null", 
+                registerDto?.Name ?? "null");
+
             if (!ModelState.IsValid)
             {
-            return BadRequest(ApiResponse.CreateError("请求参数验证失败", "VALIDATION_ERROR"));
+                var errors = ModelState
+                    .Where(x => x.Value.Errors.Count > 0)
+                    .Select(x => new { Field = x.Key, Errors = x.Value.Errors.Select(e => e.ErrorMessage) })
+                    .ToList();
+                
+                _logger.LogWarning("注册请求参数验证失败: {@Errors}", errors);
+                return BadRequest(ApiResponse.CreateError("请求参数验证失败", "VALIDATION_ERROR"));
             }
 
             try
             {
+                _logger.LogInformation("开始执行用户注册，学号: {StudentId}", registerDto.StudentId);
                 var user = await _authService.RegisterAsync(registerDto);
+                
+                _logger.LogInformation("用户注册成功，用户ID: {UserId}, 学号: {StudentId}", user.UserId, user.StudentId);
 
-            return Ok(ApiResponse<object>.CreateSuccess(new
-                    {
-                        userId = user.UserId,
-                        username = user.Username,
-                        email = user.Email,
-                        fullName = user.FullName,
-                        studentId = user.StudentId,
-                        creditScore = user.CreditScore
-            }, "注册成功"));
+                return Ok(ApiResponse<object>.CreateSuccess(new
+                {
+                    userId = user.UserId,
+                    username = user.Username,
+                    email = user.Email,
+                    fullName = user.FullName,
+                    studentId = user.StudentId,
+                    creditScore = user.CreditScore
+                }, "注册成功"));
             }
             catch (ArgumentException ex)
             {
-            _logger.LogWarning("用户注册失败，邮箱: {Email}, 原因: {Reason}", registerDto.Email, ex.Message);
-            return BadRequest(ApiResponse.CreateError(ex.Message, "REGISTRATION_FAILED"));
+                _logger.LogWarning("用户注册失败，邮箱: {Email}, 原因: {Reason}", registerDto.Email, ex.Message);
+                return BadRequest(ApiResponse.CreateError(ex.Message, "REGISTRATION_FAILED"));
             }
             catch (Exception ex)
             {
-            _logger.LogError(ex, "用户注册失败，邮箱: {Email}", registerDto.Email);
-            return StatusCode(500, ApiResponse.CreateError("注册时发生内部错误", "INTERNAL_ERROR"));
+                _logger.LogError(ex, "用户注册失败，邮箱: {Email}", registerDto.Email);
+                return StatusCode(500, ApiResponse.CreateError("注册时发生内部错误", "INTERNAL_ERROR"));
             }
         }
 

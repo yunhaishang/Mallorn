@@ -1,7 +1,16 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Text;
+using System.Text.Encodings.Web;
 using CampusTrade.API.Data;
 using CampusTrade.API.Extensions;
 using CampusTrade.API.Middleware;
+using CampusTrade.API.Options;
+
+// 设置控制台编码为UTF-8，确保中文字符正确显示
+Console.OutputEncoding = Encoding.UTF8;
 
 var builder = WebApplication.CreateBuilder(args);
 

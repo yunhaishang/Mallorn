@@ -1,6 +1,7 @@
 -- ================================================================
 -- 校园交易平台数据库初始化脚本 (Oracle)
 -- 根据数据库设计文档创建完整的数据库结构
+-- 整合了所有字段修复和表结构完善
 -- ================================================================
 
 -- 设置容器到 XEPDB1
@@ -48,7 +49,7 @@ CREATE TABLE students (
 );
 
 -- ================================================================
--- 2. 用户表 (users)
+-- 2. 用户表 (users) - 完整版本包含所有Entity Framework字段
 -- ================================================================
 CREATE TABLE users (
     user_id NUMBER PRIMARY KEY,
@@ -62,11 +63,53 @@ CREATE TABLE users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_active NUMBER(1) DEFAULT 1 CHECK (is_active IN (0,1)),
+    -- Entity Framework 需要的额外字段
+    last_login_at TIMESTAMP,
+    last_login_ip VARCHAR2(45),
+    login_count NUMBER DEFAULT 0,
+    is_locked NUMBER(1) DEFAULT 0 CHECK (is_locked IN (0,1)),
+    lockout_end TIMESTAMP,
+    failed_login_attempts NUMBER DEFAULT 0,
+    two_factor_enabled NUMBER(1) DEFAULT 0 CHECK (two_factor_enabled IN (0,1)),
+    password_changed_at TIMESTAMP,
+    security_stamp VARCHAR2(256) DEFAULT SYS_GUID(),
+    email_verified NUMBER(1) DEFAULT 0 CHECK (email_verified IN (0,1)),
+    email_verification_token VARCHAR2(256),
     CONSTRAINT fk_users_student FOREIGN KEY (student_id) REFERENCES students(student_id)
 );
 
 -- ================================================================
--- 3. 信用变更记录表 (credit_history)
+-- 3. 刷新令牌表 (refresh_tokens) - Entity Framework 需要
+-- ================================================================
+CREATE TABLE refresh_tokens (
+    id VARCHAR2(36) PRIMARY KEY,
+    token VARCHAR2(500) NOT NULL,
+    user_id NUMBER NOT NULL,
+    expiry_date TIMESTAMP NOT NULL,
+    is_revoked NUMBER(1) DEFAULT 0 CHECK (is_revoked IN (0,1)),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    revoked_at TIMESTAMP,
+    ip_address VARCHAR2(45),
+    user_agent VARCHAR2(500),
+    device_id VARCHAR2(100),
+    replaced_by_token VARCHAR2(500),
+    created_by NUMBER,
+    last_used_at TIMESTAMP,
+    revoked_by NUMBER,
+    revoke_reason VARCHAR2(200),
+    CONSTRAINT fk_refresh_tokens_user FOREIGN KEY (user_id) REFERENCES users(user_id),
+    CONSTRAINT fk_refresh_tokens_created_by FOREIGN KEY (created_by) REFERENCES users(user_id),
+    CONSTRAINT fk_refresh_tokens_revoked_by FOREIGN KEY (revoked_by) REFERENCES users(user_id)
+);
+
+-- 创建刷新令牌表的索引
+CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
+CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
+CREATE INDEX idx_refresh_tokens_expiry ON refresh_tokens(expiry_date);
+CREATE INDEX idx_refresh_tokens_device ON refresh_tokens(device_id);
+
+-- ================================================================
+-- 4. 信用变更记录表 (credit_history)
 -- ================================================================
 CREATE TABLE credit_history (
     log_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -78,7 +121,7 @@ CREATE TABLE credit_history (
 );
 
 -- ================================================================
--- 4. 登录日志表 (login_logs)
+-- 5. 登录日志表 (login_logs)
 -- ================================================================
 CREATE TABLE login_logs (
     log_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -91,7 +134,7 @@ CREATE TABLE login_logs (
 );
 
 -- ================================================================
--- 5. 邮箱验证表 (email_verification)
+-- 6. 邮箱验证表 (email_verification)
 -- ================================================================
 CREATE TABLE email_verification (
     verification_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -106,7 +149,7 @@ CREATE TABLE email_verification (
 );
 
 -- ================================================================
--- 6. 分类表 (categories)
+-- 7. 分类表 (categories)
 -- ================================================================
 CREATE TABLE categories (
     category_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -116,7 +159,7 @@ CREATE TABLE categories (
 );
 
 -- ================================================================
--- 7. 商品表 (products)
+-- 8. 商品表 (products)
 -- ================================================================
 CREATE TABLE products (
     product_id NUMBER PRIMARY KEY,
@@ -134,7 +177,7 @@ CREATE TABLE products (
 );
 
 -- ================================================================
--- 8. 商品图片表 (product_images)
+-- 9. 商品图片表 (product_images)
 -- ================================================================
 CREATE TABLE product_images (
     image_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -144,7 +187,7 @@ CREATE TABLE product_images (
 );
 
 -- ================================================================
--- 9. 抽象订单表 (abstract_orders)
+-- 10. 抽象订单表 (abstract_orders)
 -- ================================================================
 CREATE TABLE abstract_orders (
     abstract_order_id NUMBER PRIMARY KEY,
@@ -152,7 +195,7 @@ CREATE TABLE abstract_orders (
 );
 
 -- ================================================================
--- 10. 订单表 (orders)
+-- 11. 订单表 (orders)
 -- ================================================================
 CREATE TABLE orders (
     order_id NUMBER PRIMARY KEY,
@@ -171,7 +214,7 @@ CREATE TABLE orders (
 );
 
 -- ================================================================
--- 11. 虚拟账户表 (virtual_accounts)
+-- 12. 虚拟账户表 (virtual_accounts)
 -- ================================================================
 CREATE TABLE virtual_accounts (
     account_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -182,7 +225,7 @@ CREATE TABLE virtual_accounts (
 );
 
 -- ================================================================
--- 12. 充值记录表 (recharge_records)
+-- 13. 充值记录表 (recharge_records)
 -- ================================================================
 CREATE TABLE recharge_records (
     recharge_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -195,7 +238,7 @@ CREATE TABLE recharge_records (
 );
 
 -- ================================================================
--- 13. 议价表 (negotiations)
+-- 14. 议价表 (negotiations)
 -- ================================================================
 CREATE TABLE negotiations (
     negotiation_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -207,7 +250,7 @@ CREATE TABLE negotiations (
 );
 
 -- ================================================================
--- 14. 管理员表 (admins)
+-- 15. 管理员表 (admins)
 -- ================================================================
 CREATE TABLE admins (
     admin_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -224,7 +267,7 @@ CREATE TABLE admins (
 );
 
 -- ================================================================
--- 15. 审计日志表 (audit_logs)
+-- 16. 审计日志表 (audit_logs)
 -- ================================================================
 CREATE TABLE audit_logs (
     log_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -237,7 +280,7 @@ CREATE TABLE audit_logs (
 );
 
 -- ================================================================
--- 16. 换物请求表 (exchange_requests)
+-- 17. 换物请求表 (exchange_requests)
 -- ================================================================
 CREATE TABLE exchange_requests (
     exchange_id NUMBER PRIMARY KEY,
@@ -252,7 +295,7 @@ CREATE TABLE exchange_requests (
 );
 
 -- ================================================================
--- 17. 通知表 (notifications)
+-- 18. 通知表 (notifications)
 -- ================================================================
 CREATE TABLE notifications (
     notification_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -265,7 +308,7 @@ CREATE TABLE notifications (
 );
 
 -- ================================================================
--- 18. 评价表 (reviews)
+-- 19. 评价表 (reviews)
 -- ================================================================
 CREATE TABLE reviews (
     review_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -281,7 +324,7 @@ CREATE TABLE reviews (
 );
 
 -- ================================================================
--- 19. 举报表 (reports)
+-- 20. 举报表 (reports)
 -- ================================================================
 CREATE TABLE reports (
     report_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -297,7 +340,7 @@ CREATE TABLE reports (
 );
 
 -- ================================================================
--- 20. 举报证据表 (report_evidence)
+-- 21. 举报证据表 (report_evidence)
 -- ================================================================
 CREATE TABLE report_evidence (
     evidence_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -312,8 +355,8 @@ CREATE TABLE report_evidence (
 -- 创建触发器
 -- ================================================================
 
--- 用户ID自增触发器
-CREATE OR REPLACE TRIGGER trg_users_id
+-- 用户ID自增触发器 (改进版本，支持手动指定和自动生成)
+CREATE OR REPLACE TRIGGER users_id_trigger
     BEFORE INSERT ON users
     FOR EACH ROW
 BEGIN
@@ -390,11 +433,23 @@ END;
 -- 插入基础数据
 -- ================================================================
 
--- 插入学生信息
+-- 插入学生信息（包含更多测试数据）
 INSERT INTO students (student_id, name, department) VALUES ('ADMIN001', '系统管理员', '计算机学院');
 INSERT INTO students (student_id, name, department) VALUES ('STU001', '张三', '计算机学院');
 INSERT INTO students (student_id, name, department) VALUES ('STU002', '李四', '电子信息学院');
 INSERT INTO students (student_id, name, department) VALUES ('STU003', '王五', '机械工程学院');
+
+-- 添加更多学生信息供注册测试
+INSERT INTO students (student_id, name, department) VALUES ('2352495', '张竹和', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2353108', '钱宝强', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2351427', '缪语欣', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2354177', '陈雷诗语', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2352755', '刘奕含', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2352491', '郭艺', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2351284', '李思远', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2354269', '刘笑云', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2352749', '戴湘宁', '计算机科学与技术学院');
+INSERT INTO students (student_id, name, department) VALUES ('2351588', '谭鹏翀', '计算机科学与技术学院');
 
 -- 插入分类数据
 -- 第一级分类
@@ -424,17 +479,17 @@ INSERT INTO categories (parent_id, name) VALUES (4, '支持换物');
 
 -- 插入用户数据
 -- 密码都是 "password" 的 BCrypt 哈希值: $2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi
-INSERT INTO users (username, email, password_hash, full_name, student_id, credit_score) 
-VALUES ('admin', 'admin@campus.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '系统管理员', 'ADMIN001', 100.0);
+INSERT INTO users (username, email, password_hash, full_name, student_id, credit_score, login_count, is_locked, failed_login_attempts, two_factor_enabled, email_verified, security_stamp) 
+VALUES ('admin', 'admin@campus.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '系统管理员', 'ADMIN001', 100.0, 0, 0, 0, 0, 1, SYS_GUID());
 
-INSERT INTO users (username, email, password_hash, full_name, student_id, credit_score) 
-VALUES ('zhangsan', 'zhangsan@campus.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '张三', 'STU001', 85.0);
+INSERT INTO users (username, email, password_hash, full_name, student_id, credit_score, login_count, is_locked, failed_login_attempts, two_factor_enabled, email_verified, security_stamp) 
+VALUES ('zhangsan', 'zhangsan@campus.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '张三', 'STU001', 85.0, 0, 0, 0, 0, 1, SYS_GUID());
 
-INSERT INTO users (username, email, password_hash, full_name, student_id, credit_score) 
-VALUES ('lisi', 'lisi@campus.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '李四', 'STU002', 75.0);
+INSERT INTO users (username, email, password_hash, full_name, student_id, credit_score, login_count, is_locked, failed_login_attempts, two_factor_enabled, email_verified, security_stamp) 
+VALUES ('lisi', 'lisi@campus.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '李四', 'STU002', 75.0, 0, 0, 0, 0, 1, SYS_GUID());
 
-INSERT INTO users (username, email, password_hash, full_name, student_id, credit_score) 
-VALUES ('wangwu', 'wangwu@campus.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '王五', 'STU003', 90.0);
+INSERT INTO users (username, email, password_hash, full_name, student_id, credit_score, login_count, is_locked, failed_login_attempts, two_factor_enabled, email_verified, security_stamp) 
+VALUES ('wangwu', 'wangwu@campus.edu', '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '王五', 'STU003', 90.0, 0, 0, 0, 0, 1, SYS_GUID());
 
 -- 设置管理员
 INSERT INTO admins (user_id, role) VALUES (1, 'super');
@@ -464,8 +519,14 @@ SELECT COUNT(*) AS user_count FROM users;
 SELECT COUNT(*) AS category_count FROM categories;
 SELECT COUNT(*) AS product_count FROM products;
 SELECT COUNT(*) AS virtual_account_count FROM virtual_accounts;
+SELECT COUNT(*) AS refresh_token_count FROM refresh_tokens;
 
 -- 显示用户和对应的虚拟账户
 SELECT u.username, u.full_name, u.credit_score, va.balance 
 FROM users u 
-LEFT JOIN virtual_accounts va ON u.user_id = va.user_id; 
+LEFT JOIN virtual_accounts va ON u.user_id = va.user_id;
+
+-- 验证USERS表结构
+DESC users;
+
+SELECT 'Database initialization complete with all fixes applied!' AS final_message FROM dual; 

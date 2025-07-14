@@ -84,7 +84,13 @@ namespace CampusTrade.API.Services.Auth
                 CreditScore = 60.0m, // 新用户默认信用分
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
-                IsActive = 1
+                IsActive = 1,
+                LoginCount = 0,
+                IsLocked = 0,
+                FailedLoginAttempts = 0,
+                TwoFactorEnabled = 0,
+                EmailVerified = 0,
+                SecurityStamp = Guid.NewGuid().ToString()
             };
 
             _context.Users.Add(user);
@@ -102,15 +108,15 @@ namespace CampusTrade.API.Services.Auth
                     && u.IsActive == 1);
         }
 
-                public async Task<bool> ValidateStudentAsync(string studentId, string name)
+        public async Task<bool> ValidateStudentAsync(string studentId, string name)
         {
             try 
             {
-                // 验证学生信息是否在预存的学生表中
-                var student = await _context.Students
-                    .FirstOrDefaultAsync(s => s.StudentId == studentId && s.Name == name);
+            // 验证学生信息是否在预存的学生表中
+            var student = await _context.Students
+                .FirstOrDefaultAsync(s => s.StudentId == studentId && s.Name == name);
 
-                return student != null;
+            return student != null;
             }
             catch (Exception ex)
             {
@@ -148,7 +154,7 @@ namespace CampusTrade.API.Services.Auth
                     // 检查是否需要锁定账户（例如失败5次后锁定1小时）
                     if (user.FailedLoginAttempts >= 5)
                     {
-                        user.IsLocked = true;
+                        user.IsLocked = 1;
                         user.LockoutEnd = DateTime.UtcNow.AddHours(1);
                         _logger.LogWarning("账户因多次登录失败被锁定，用户ID: {UserId}", user.UserId);
                     }
@@ -159,16 +165,16 @@ namespace CampusTrade.API.Services.Auth
                 }
 
                 // 检查账户是否被锁定
-                if (user.IsLocked && user.LockoutEnd > DateTime.UtcNow)
+                if (user.IsLocked == 1 && user.LockoutEnd > DateTime.UtcNow)
                 {
                     _logger.LogWarning("登录失败：账户被锁定，用户ID: {UserId}, 锁定至: {LockoutEnd}", user.UserId, user.LockoutEnd);
                     return null;
                 }
 
                 // 清除锁定状态和失败次数
-                if (user.IsLocked && user.LockoutEnd <= DateTime.UtcNow)
+                if (user.IsLocked == 1 && user.LockoutEnd <= DateTime.UtcNow)
                 {
-                    user.IsLocked = false;
+                    user.IsLocked = 0;
                     user.LockoutEnd = null;
                 }
                 user.FailedLoginAttempts = 0;
