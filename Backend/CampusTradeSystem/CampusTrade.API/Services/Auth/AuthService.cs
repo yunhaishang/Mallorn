@@ -102,13 +102,21 @@ namespace CampusTrade.API.Services.Auth
                     && u.IsActive == 1);
         }
 
-        public async Task<bool> ValidateStudentAsync(string studentId, string name)
+                public async Task<bool> ValidateStudentAsync(string studentId, string name)
         {
-            // 验证学生信息是否在预存的学生表中
-            var student = await _context.Students
-                .FirstOrDefaultAsync(s => s.StudentId == studentId && s.Name == name);
+            try 
+            {
+                // 验证学生信息是否在预存的学生表中
+                var student = await _context.Students
+                    .FirstOrDefaultAsync(s => s.StudentId == studentId && s.Name == name);
 
-            return student != null;
+                return student != null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"验证学生身份时发生错误: StudentId={studentId}, Name={name}");
+                return false;
+            }
         }
 
         /// <summary>
