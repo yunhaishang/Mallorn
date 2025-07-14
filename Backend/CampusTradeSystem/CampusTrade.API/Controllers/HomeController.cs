@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
 using CampusTrade.API.Models.DTOs.Common;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CampusTrade.API.Controllers;
 

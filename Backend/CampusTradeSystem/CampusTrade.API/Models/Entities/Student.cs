@@ -23,4 +23,4 @@ namespace CampusTrade.API.Models.Entities
         // 导航属性
         public virtual User? User { get; set; }
     }
-} 
+}

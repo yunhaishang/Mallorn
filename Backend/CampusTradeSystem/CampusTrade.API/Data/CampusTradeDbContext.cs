@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using CampusTrade.API.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampusTrade.API.Data
 {
@@ -23,7 +23,7 @@ namespace CampusTrade.API.Data
             {
                 entity.ToTable("STUDENTS");
                 entity.HasKey(e => e.StudentId);
-                
+
                 entity.Property(e => e.StudentId)
                     .HasColumnName("STUDENT_ID")
                     .IsRequired()
@@ -46,7 +46,7 @@ namespace CampusTrade.API.Data
                 entity.HasKey(e => e.UserId);
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.StudentId).IsUnique();
-                
+
                 entity.Property(e => e.UserId)
                     .HasColumnName("USER_ID")
                     .ValueGeneratedOnAdd();
@@ -166,7 +166,7 @@ namespace CampusTrade.API.Data
             {
                 entity.ToTable("REFRESH_TOKENS");
                 entity.HasKey(e => e.Id);
-                
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
                     .ValueGeneratedOnAdd();
@@ -252,4 +252,4 @@ namespace CampusTrade.API.Data
             });
         }
     }
-} 
+}

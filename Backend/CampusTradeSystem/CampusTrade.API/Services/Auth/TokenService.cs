@@ -1,14 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.IdentityModel.Tokens;
 using CampusTrade.API.Data;
-using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Models.DTOs.Auth;
+using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Options;
 using CampusTrade.API.Utils.Security;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CampusTrade.API.Services.Auth;
 
@@ -474,4 +474,4 @@ public class TokenService : ITokenService
     }
 
 
-} 
+}

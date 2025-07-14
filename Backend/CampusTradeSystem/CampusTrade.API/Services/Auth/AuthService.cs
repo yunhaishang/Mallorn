@@ -1,8 +1,8 @@
-using Microsoft.EntityFrameworkCore;
 using CampusTrade.API.Data;
-using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Models.DTOs.Auth;
+using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Utils.Security;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampusTrade.API.Services.Auth
 {
@@ -25,7 +25,7 @@ namespace CampusTrade.API.Services.Auth
         private readonly ILogger<AuthService> _logger;
 
         public AuthService(
-            CampusTradeDbContext context, 
+            CampusTradeDbContext context,
             IConfiguration configuration,
             ITokenService tokenService,
             ILogger<AuthService> logger)
@@ -103,20 +103,20 @@ namespace CampusTrade.API.Services.Auth
         {
             return await _context.Users
                 .Include(u => u.Student)
-                .FirstOrDefaultAsync(u => 
-                    (u.Username == username || u.Email == username) 
+                .FirstOrDefaultAsync(u =>
+                    (u.Username == username || u.Email == username)
                     && u.IsActive == 1);
         }
 
         public async Task<bool> ValidateStudentAsync(string studentId, string name)
         {
-            try 
+            try
             {
-            // 验证学生信息是否在预存的学生表中
-            var student = await _context.Students
-                .FirstOrDefaultAsync(s => s.StudentId == studentId && s.Name == name);
+                // 验证学生信息是否在预存的学生表中
+                var student = await _context.Students
+                    .FirstOrDefaultAsync(s => s.StudentId == studentId && s.Name == name);
 
-            return student != null;
+                return student != null;
             }
             catch (Exception ex)
             {
@@ -135,8 +135,8 @@ namespace CampusTrade.API.Services.Auth
                 // 支持用户名或邮箱登录
                 var user = await _context.Users
                     .Include(u => u.Student)
-                    .FirstOrDefaultAsync(u => 
-                        (u.Username == loginRequest.Username || u.Email == loginRequest.Username) 
+                    .FirstOrDefaultAsync(u =>
+                        (u.Username == loginRequest.Username || u.Email == loginRequest.Username)
                         && u.IsActive == 1);
 
                 if (user == null)
@@ -150,7 +150,7 @@ namespace CampusTrade.API.Services.Auth
                 {
                     // 增加失败登录次数
                     user.FailedLoginAttempts++;
-                    
+
                     // 检查是否需要锁定账户（例如失败5次后锁定1小时）
                     if (user.FailedLoginAttempts >= 5)
                     {
@@ -158,7 +158,7 @@ namespace CampusTrade.API.Services.Auth
                         user.LockoutEnd = DateTime.UtcNow.AddHours(1);
                         _logger.LogWarning("账户因多次登录失败被锁定，用户ID: {UserId}", user.UserId);
                     }
-                    
+
                     await _context.SaveChangesAsync();
                     _logger.LogWarning("登录失败：密码错误，用户名: {Username}", loginRequest.Username);
                     return null;
@@ -181,9 +181,9 @@ namespace CampusTrade.API.Services.Auth
 
                 // 生成Token响应
                 var tokenResponse = await _tokenService.GenerateTokenResponseAsync(
-                    user, 
-                    ipAddress, 
-                    userAgent, 
+                    user,
+                    ipAddress,
+                    userAgent,
                     loginRequest.DeviceId);
 
                 _logger.LogInformation("用户登录成功，用户ID: {UserId}, 设备ID: {DeviceId}", user.UserId, tokenResponse.DeviceId);
@@ -204,7 +204,7 @@ namespace CampusTrade.API.Services.Auth
             try
             {
                 var result = await _tokenService.RevokeRefreshTokenAsync(refreshToken, reason ?? "用户注销");
-                _logger.LogInformation("用户注销，Token: {Token}, 结果: {Result}", 
+                _logger.LogInformation("用户注销，Token: {Token}, 结果: {Result}",
                     SecurityHelper.ObfuscateSensitive(refreshToken), result);
                 return result;
             }
@@ -253,4 +253,4 @@ namespace CampusTrade.API.Services.Auth
 
 
     }
-} 
+}

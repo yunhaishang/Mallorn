@@ -162,7 +162,7 @@ public class RefreshToken
     public TimeSpan? GetRemainingLifetime()
     {
         if (IsRevoked == 1) return null;
-        
+
         var remaining = ExpiryDate - DateTime.UtcNow;
         return remaining > TimeSpan.Zero ? remaining : TimeSpan.Zero;
     }
@@ -174,8 +174,8 @@ public class RefreshToken
     public bool IsExpiringSoon()
     {
         if (IsRevoked == 1) return false;
-        
+
         var remaining = ExpiryDate - DateTime.UtcNow;
         return remaining <= TimeSpan.FromHours(24) && remaining > TimeSpan.Zero;
     }
-} 
+}
