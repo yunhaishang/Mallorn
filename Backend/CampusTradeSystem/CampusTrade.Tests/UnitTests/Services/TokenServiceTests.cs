@@ -1,15 +1,15 @@
-using Xunit;
-using Moq;
+using System.IdentityModel.Tokens.Jwt;
+using CampusTrade.API.Models.DTOs.Auth;
+using CampusTrade.API.Models.Entities;
+using CampusTrade.API.Options;
+using CampusTrade.API.Services.Auth;
+using CampusTrade.Tests.Helpers;
 using FluentAssertions;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Caching.Memory;
-using CampusTrade.API.Services.Auth;
-using CampusTrade.API.Models.Entities;
-using CampusTrade.API.Models.DTOs.Auth;
-using CampusTrade.API.Options;
-using CampusTrade.Tests.Helpers;
-using System.IdentityModel.Tokens.Jwt;
+using Moq;
+using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Services;
 
@@ -28,7 +28,7 @@ public class TokenServiceTests : IDisposable
     {
         (_mockCache, _mockCacheEntry) = MockHelper.CreateMockMemoryCacheWithEntry();
         _mockLogger = MockHelper.CreateMockLogger<TokenService>();
-        
+
         _jwtOptions = new JwtOptions
         {
             SecretKey = "YourSecretKeyForCampusTradingPlatformProduction2025!MustBe32CharactersLong",
@@ -44,7 +44,7 @@ public class TokenServiceTests : IDisposable
 
         var jwtOptionsWrapper = MockHelper.CreateMockOptions(_jwtOptions);
         var context = TestDbContextFactory.CreateInMemoryDbContext();
-        
+
         _tokenService = new TokenService(context, jwtOptionsWrapper, _mockCache.Object, _mockLogger.Object);
     }
 
@@ -62,10 +62,10 @@ public class TokenServiceTests : IDisposable
         // Assert
         token.Should().NotBeEmpty();
         JwtTestHelper.IsValidJwtFormat(token).Should().BeTrue();
-        
+
         var userId = JwtTestHelper.ExtractUserId(token);
         userId.Should().Be(user.UserId);
-        
+
         var username = JwtTestHelper.ExtractUsername(token);
         username.Should().Be(user.Username);
     }
@@ -86,10 +86,10 @@ public class TokenServiceTests : IDisposable
 
         // Assert
         token.Should().NotBeEmpty();
-        
+
         var handler = new JwtSecurityTokenHandler();
         var jsonToken = handler.ReadJwtToken(token);
-        
+
         jsonToken.Claims.Should().Contain(c => c.Type == "role" && c.Value == "admin");
         jsonToken.Claims.Should().Contain(c => c.Type == "permission" && c.Value == "manage_users");
     }
@@ -241,7 +241,7 @@ public class TokenServiceTests : IDisposable
         var user = TestDbContextFactory.GetTestUser(1);
         var token = JwtTestHelper.GenerateTestJwtToken(user);
         var jti = JwtTestHelper.ExtractJti(token);
-        
+
         // 设置Token在黑名单中
         MockHelper.SetupMockCacheContains(_mockCache, $"blacklist:{jti}", true);
 
@@ -334,7 +334,7 @@ public class TokenServiceTests : IDisposable
         };
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => 
+        var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _tokenService.RefreshTokenAsync(refreshTokenRequest));
         exception.Message.Should().Contain("无效的刷新令牌");
     }
@@ -450,10 +450,10 @@ public class TokenServiceTests : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        
+
         // 验证CreateEntry被调用，这是Set()方法内部会调用的
         _mockCache.Verify(x => x.CreateEntry($"blacklist:{jti}"), Times.Once);
-        
+
         // 验证缓存条目的值和过期时间被设置
         _mockCacheEntry.VerifySet(x => x.Value = true);
         _mockCacheEntry.VerifySet(x => x.AbsoluteExpirationRelativeToNow = It.IsAny<TimeSpan>());
@@ -471,7 +471,7 @@ public class TokenServiceTests : IDisposable
 
         // Assert
         result.Should().BeTrue();
-        
+
         // 验证CreateEntry没有被调用，因为Token已过期
         _mockCache.Verify(x => x.CreateEntry(It.IsAny<object>()), Times.Never);
     }
@@ -528,4 +528,4 @@ public class TokenServiceTests : IDisposable
     {
         // 清理资源
     }
-} 
+}
