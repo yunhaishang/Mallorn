@@ -8,8 +8,53 @@
 ALTER SESSION SET CONTAINER=XEPDB1;
 
 -- 创建用户和授权
-ALTER SESSION SET "_ORACLE_SCRIPT"=true;
+-- 设置Oracle脚本模式，允许在PDB中创建用户
+BEGIN
+    EXECUTE IMMEDIATE 'ALTER SESSION SET "_ORACLE_SCRIPT"=true';
+    DBMS_OUTPUT.PUT_LINE('Oracle script mode enabled');
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Warning: Could not set Oracle script mode: ' || SQLERRM);
+END;
+/
 
+-- 启用DBMS_OUTPUT
+SET SERVEROUTPUT ON;
+
+-- ================================================================
+-- 清理现有用户和表空间
+-- ================================================================
+-- 删除现有用户 (如果存在)
+BEGIN
+    EXECUTE IMMEDIATE 'DROP USER CAMPUS_TRADE_USER CASCADE';
+    DBMS_OUTPUT.PUT_LINE('User CAMPUS_TRADE_USER dropped successfully');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -1918 THEN
+            DBMS_OUTPUT.PUT_LINE('User CAMPUS_TRADE_USER does not exist, skipping...');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error dropping user: ' || SQLERRM);
+        END IF;
+END;
+/
+
+-- 删除现有表空间 (如果存在)
+BEGIN
+    EXECUTE IMMEDIATE 'DROP TABLESPACE CAMPUS_TRADE_DATA INCLUDING CONTENTS AND DATAFILES';
+    DBMS_OUTPUT.PUT_LINE('Tablespace CAMPUS_TRADE_DATA dropped successfully');
+EXCEPTION
+    WHEN OTHERS THEN
+        IF SQLCODE = -959 THEN
+            DBMS_OUTPUT.PUT_LINE('Tablespace CAMPUS_TRADE_DATA does not exist, skipping...');
+        ELSE
+            DBMS_OUTPUT.PUT_LINE('Error dropping tablespace: ' || SQLERRM);
+        END IF;
+END;
+/
+
+-- ================================================================
+-- 重新创建表空间和用户
+-- ================================================================
 -- 创建表空间
 CREATE TABLESPACE CAMPUS_TRADE_DATA
 DATAFILE '/opt/oracle/oradata/XE/XEPDB1/campus_trade_data.dbf' SIZE 200M
@@ -28,8 +73,90 @@ GRANT CREATE TABLE TO CAMPUS_TRADE_USER;
 GRANT CREATE SEQUENCE TO CAMPUS_TRADE_USER;
 GRANT CREATE TRIGGER TO CAMPUS_TRADE_USER;
 
+-- 输出用户创建成功信息
+SELECT 'User CAMPUS_TRADE_USER created and granted permissions successfully!' AS user_status FROM dual;
+
 -- 连接到用户
-CONNECT CAMPUS_TRADE_USER/CampusTrade123!@XEPDB1;
+-- 使用更兼容的连接方式
+CONNECT CAMPUS_TRADE_USER/"CampusTrade123!"@XEPDB1;
+
+-- 验证连接
+SELECT 'Successfully connected as: ' || USER AS connection_status FROM dual;
+
+-- 启用DBMS_OUTPUT (用户级别)
+SET SERVEROUTPUT ON;
+
+-- ================================================================
+-- 清空数据库 - 删除所有表和序列
+-- ================================================================
+-- 删除表时使用CASCADE CONSTRAINTS来处理外键约束
+-- 使用PURGE来彻底删除，避免进入回收站
+
+-- 删除所有表 (按依赖关系逆序删除)
+DECLARE
+    table_count NUMBER := 0;
+BEGIN
+    FOR cur_rec IN (SELECT table_name FROM user_tables) LOOP
+        EXECUTE IMMEDIATE 'DROP TABLE ' || cur_rec.table_name || ' CASCADE CONSTRAINTS PURGE';
+        table_count := table_count + 1;
+        DBMS_OUTPUT.PUT_LINE('Dropped table: ' || cur_rec.table_name);
+    END LOOP;
+    
+    IF table_count = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('No tables to drop');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Total tables dropped: ' || table_count);
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error dropping tables: ' || SQLERRM);
+END;
+/
+
+-- 删除所有序列
+DECLARE
+    seq_count NUMBER := 0;
+BEGIN
+    FOR cur_rec IN (SELECT sequence_name FROM user_sequences) LOOP
+        EXECUTE IMMEDIATE 'DROP SEQUENCE ' || cur_rec.sequence_name;
+        seq_count := seq_count + 1;
+        DBMS_OUTPUT.PUT_LINE('Dropped sequence: ' || cur_rec.sequence_name);
+    END LOOP;
+    
+    IF seq_count = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('No sequences to drop');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Total sequences dropped: ' || seq_count);
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error dropping sequences: ' || SQLERRM);
+END;
+/
+
+-- 删除所有触发器
+DECLARE
+    trigger_count NUMBER := 0;
+BEGIN
+    FOR cur_rec IN (SELECT trigger_name FROM user_triggers) LOOP
+        EXECUTE IMMEDIATE 'DROP TRIGGER ' || cur_rec.trigger_name;
+        trigger_count := trigger_count + 1;
+        DBMS_OUTPUT.PUT_LINE('Dropped trigger: ' || cur_rec.trigger_name);
+    END LOOP;
+    
+    IF trigger_count = 0 THEN
+        DBMS_OUTPUT.PUT_LINE('No triggers to drop');
+    ELSE
+        DBMS_OUTPUT.PUT_LINE('Total triggers dropped: ' || trigger_count);
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+        DBMS_OUTPUT.PUT_LINE('Error dropping triggers: ' || SQLERRM);
+END;
+/
+
+-- 输出清理完成信息
+SELECT 'Database cleanup completed - all tables, sequences, and triggers removed!' AS cleanup_message FROM dual;
 
 -- ================================================================
 -- 创建序列 (用于自增ID)
@@ -295,20 +422,43 @@ CREATE TABLE exchange_requests (
 );
 
 -- ================================================================
--- 18. 通知表 (notifications)
+-- 18. 通知模板表 (notification_templates)
+-- ================================================================
+CREATE TABLE notification_templates (
+    template_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    template_name VARCHAR2(100) NOT NULL,
+    template_type VARCHAR2(20) CHECK (template_type IN ('商品相关','交易相关','评价相关','系统通知')),
+    template_content CLOB NOT NULL,
+    description VARCHAR2(500),
+    priority NUMBER CHECK (priority BETWEEN 1 AND 5) DEFAULT 2,
+    is_active NUMBER DEFAULT 1 CHECK (is_active IN (0,1)),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    created_by NUMBER,
+    CONSTRAINT fk_template_creator FOREIGN KEY (created_by) REFERENCES users(user_id)
+);
+
+-- ================================================================
+-- 19. 通知表 (notifications) 
 -- ================================================================
 CREATE TABLE notifications (
     notification_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    order_id NUMBER NOT NULL,
-    content CLOB NOT NULL,
+    template_id NUMBER NOT NULL,
+    recipient_id NUMBER NOT NULL,
+    order_id NUMBER,
+    template_params CLOB,
     send_status VARCHAR2(20) DEFAULT '待发送' CHECK (send_status IN ('待发送','成功','失败')),
     retry_count NUMBER DEFAULT 0,
     last_attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sent_at TIMESTAMP,
+    CONSTRAINT fk_notification_template FOREIGN KEY (template_id) REFERENCES notification_templates(template_id),
+    CONSTRAINT fk_notification_recipient FOREIGN KEY (recipient_id) REFERENCES users(user_id),
     CONSTRAINT fk_notification_order FOREIGN KEY (order_id) REFERENCES abstract_orders(abstract_order_id)
 );
 
 -- ================================================================
--- 19. 评价表 (reviews)
+-- 20. 评价表 (reviews)
 -- ================================================================
 CREATE TABLE reviews (
     review_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -324,7 +474,7 @@ CREATE TABLE reviews (
 );
 
 -- ================================================================
--- 20. 举报表 (reports)
+-- 21. 举报表 (reports)
 -- ================================================================
 CREATE TABLE reports (
     report_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -340,7 +490,7 @@ CREATE TABLE reports (
 );
 
 -- ================================================================
--- 21. 举报证据表 (report_evidence)
+-- 22. 举报证据表 (report_evidence)
 -- ================================================================
 CREATE TABLE report_evidence (
     evidence_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -510,10 +660,27 @@ COMMIT;
 -- ================================================================
 -- 验证表创建结果
 -- ================================================================
+SELECT '========================================' AS separator FROM dual;
+SELECT 'DATABASE CREATION SUMMARY' AS title FROM dual;
+SELECT '========================================' AS separator FROM dual;
+
+-- 显示创建的表
 SELECT 'Tables created successfully:' AS message FROM dual;
 SELECT table_name FROM user_tables ORDER BY table_name;
 
-SELECT 'Sample data verification:' AS message FROM dual;
+-- 显示创建的序列
+SELECT 'Sequences created:' AS message FROM dual;
+SELECT sequence_name FROM user_sequences ORDER BY sequence_name;
+
+-- 显示创建的触发器
+SELECT 'Triggers created:' AS message FROM dual;
+SELECT trigger_name FROM user_triggers ORDER BY trigger_name;
+
+-- 验证数据插入结果
+SELECT '========================================' AS separator FROM dual;
+SELECT 'SAMPLE DATA VERIFICATION' AS title FROM dual;
+SELECT '========================================' AS separator FROM dual;
+
 SELECT COUNT(*) AS student_count FROM students;
 SELECT COUNT(*) AS user_count FROM users;
 SELECT COUNT(*) AS category_count FROM categories;
@@ -522,11 +689,21 @@ SELECT COUNT(*) AS virtual_account_count FROM virtual_accounts;
 SELECT COUNT(*) AS refresh_token_count FROM refresh_tokens;
 
 -- 显示用户和对应的虚拟账户
+SELECT '========================================' AS separator FROM dual;
+SELECT 'USER ACCOUNTS WITH VIRTUAL BALANCES' AS title FROM dual;
+SELECT '========================================' AS separator FROM dual;
+
 SELECT u.username, u.full_name, u.credit_score, va.balance 
 FROM users u 
 LEFT JOIN virtual_accounts va ON u.user_id = va.user_id;
 
 -- 验证USERS表结构
+SELECT '========================================' AS separator FROM dual;
+SELECT 'USERS TABLE STRUCTURE' AS title FROM dual;
+SELECT '========================================' AS separator FROM dual;
 DESC users;
 
-SELECT 'Database initialization complete with all fixes applied!' AS final_message FROM dual; 
+SELECT '========================================' AS separator FROM dual;
+SELECT 'Database initialization complete with all fixes applied!' AS final_message FROM dual;
+SELECT 'Ready for application usage!' AS status FROM dual;
+SELECT '========================================' AS separator FROM dual; 
