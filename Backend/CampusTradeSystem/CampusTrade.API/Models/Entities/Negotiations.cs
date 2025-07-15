@@ -239,7 +239,7 @@ namespace CampusTrade.API.Models.Entities
         public bool IsTimeout(int timeoutHours = 24)
         {
             if (IsCompleted()) return false;
-            
+
             var timeoutTime = CreatedAt.AddHours(timeoutHours);
             return DateTime.Now > timeoutTime;
         }
@@ -313,7 +313,7 @@ namespace CampusTrade.API.Models.Entities
         /// <param name="maxDiscountRate">最大折扣率，默认0.5（5折）</param>
         /// <param name="maxMarkupRate">最大涨价率，默认1.5（1.5倍）</param>
         /// <returns>如果价格合理返回true</returns>
-        public static bool IsReasonablePrice(decimal proposedPrice, decimal originalPrice, 
+        public static bool IsReasonablePrice(decimal proposedPrice, decimal originalPrice,
             decimal maxDiscountRate = 0.5m, decimal maxMarkupRate = 1.5m)
         {
             if (originalPrice <= 0 || proposedPrice <= 0) return false;

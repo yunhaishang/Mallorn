@@ -10,7 +10,7 @@ namespace CampusTrade.API.Models.Entities
     public class Reports
     {
         #region 基本信息
-        
+
         /// <summary>
         /// 举报ID - 主键，自增
         /// </summary>
@@ -245,7 +245,7 @@ namespace CampusTrade.API.Models.Entities
         public string GetPriorityDescription()
         {
             if (!Priority.HasValue) return "未设置";
-            
+
             return Priority.Value switch
             {
                 >= 9 => "紧急",
@@ -260,9 +260,9 @@ namespace CampusTrade.API.Models.Entities
         /// </summary>
         public bool IsValid()
         {
-            return OrderId > 0 
-                && ReporterId > 0 
-                && IsValidType() 
+            return OrderId > 0
+                && ReporterId > 0
+                && IsValidType()
                 && IsValidStatus()
                 && (!Priority.HasValue || (Priority.Value >= 1 && Priority.Value <= 10));
         }

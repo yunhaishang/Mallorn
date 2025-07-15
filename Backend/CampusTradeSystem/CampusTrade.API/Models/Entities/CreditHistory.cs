@@ -16,14 +16,14 @@ namespace CampusTrade.API.Models.Entities
         [Column("LOG_ID", TypeName = "NUMBER")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int LogId { get; set; }
-        
+
         /// <summary>
         /// 用户ID - 外键，对应Oracle中的user_id字段
         /// </summary>
         [Required]
         [Column("USER_ID", TypeName = "NUMBER")]
         public int UserId { get; set; }
-        
+
         /// <summary>
         /// 变更类型 - 对应Oracle中的change_type字段
         /// 限制值：交易完成、举报处罚、好评奖励
@@ -40,7 +40,7 @@ namespace CampusTrade.API.Models.Entities
         [Column("NEW_SCORE", TypeName = "NUMBER(3,1)")]
         [Range(0.0, 100.0, ErrorMessage = "信用分数必须在0-100之间")]
         public decimal NewScore { get; set; }
-        
+
         /// <summary>
         /// 创建时间 - 对应Oracle中的created_at字段，默认为当前时间
         /// </summary>
@@ -68,8 +68,8 @@ namespace CampusTrade.API.Models.Entities
         /// <returns>是否有效</returns>
         public static bool IsValidChangeType(string changeType)
         {
-            return changeType == ChangeTypes.TransactionCompleted || 
-                   changeType == ChangeTypes.ReportPenalty || 
+            return changeType == ChangeTypes.TransactionCompleted ||
+                   changeType == ChangeTypes.ReportPenalty ||
                    changeType == ChangeTypes.PositiveReviewReward;
         }
 

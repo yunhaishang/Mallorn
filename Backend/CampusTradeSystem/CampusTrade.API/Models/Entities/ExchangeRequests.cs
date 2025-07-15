@@ -257,7 +257,7 @@ namespace CampusTrade.API.Models.Entities
         public bool IsTimeout(int timeoutHours = 48)
         {
             if (IsCompleted()) return false;
-            
+
             var timeoutTime = CreatedAt.AddHours(timeoutHours);
             return DateTime.Now > timeoutTime;
         }
@@ -291,7 +291,7 @@ namespace CampusTrade.API.Models.Entities
             var statusText = GetStatusDisplayText();
             var offerTitle = OfferProduct?.Title ?? "未知商品";
             var requestTitle = RequestProduct?.Title ?? "未知商品";
-            
+
             return $"用'{offerTitle}'换取'{requestTitle}'，状态：{statusText}，创建时间：{CreatedAt:yyyy-MM-dd HH:mm:ss}";
         }
 

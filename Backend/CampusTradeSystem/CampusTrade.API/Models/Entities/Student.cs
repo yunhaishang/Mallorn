@@ -36,4 +36,4 @@ namespace CampusTrade.API.Models.Entities
         // 导航属性：一个学生对应一个用户账户
         public virtual User? User { get; set; }
     }
-} 
+}

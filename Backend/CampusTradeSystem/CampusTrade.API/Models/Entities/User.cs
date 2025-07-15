@@ -207,7 +207,7 @@ namespace CampusTrade.API.Models.Entities
         /// 用于JWT Token刷新机制，支持多设备登录
         /// </summary>
         public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
-        
+
         /// <summary>
         /// 用户的信用变更记录集合 - 一对多关系
         /// 记录用户信用分数的所有变更历史
@@ -273,7 +273,7 @@ namespace CampusTrade.API.Models.Entities
         /// 记录该用户作为举报人提交的所有举报
         /// </summary>
         public virtual ICollection<Reports> Reports { get; set; } = new List<Reports>();
-        
+
         #endregion
     }
-} 
+}

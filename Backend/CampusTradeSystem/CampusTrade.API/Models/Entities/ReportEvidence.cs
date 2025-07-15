@@ -10,7 +10,7 @@ namespace CampusTrade.API.Models.Entities
     public class ReportEvidence
     {
         #region 基本信息
-        
+
         /// <summary>
         /// 证据ID - 主键，自增
         /// </summary>
@@ -102,7 +102,7 @@ namespace CampusTrade.API.Models.Entities
             if (string.IsNullOrWhiteSpace(FileUrl))
                 return false;
 
-            return Uri.TryCreate(FileUrl, UriKind.Absolute, out var uri) 
+            return Uri.TryCreate(FileUrl, UriKind.Absolute, out var uri)
                 && (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
         }
 
@@ -111,8 +111,8 @@ namespace CampusTrade.API.Models.Entities
         /// </summary>
         public bool IsLocalFile()
         {
-            return !string.IsNullOrWhiteSpace(FileUrl) 
-                && !FileUrl.StartsWith("http://") 
+            return !string.IsNullOrWhiteSpace(FileUrl)
+                && !FileUrl.StartsWith("http://")
                 && !FileUrl.StartsWith("https://");
         }
 
@@ -214,8 +214,8 @@ namespace CampusTrade.API.Models.Entities
         /// </summary>
         public bool IsValid()
         {
-            return ReportId > 0 
-                && IsValidFileType() 
+            return ReportId > 0
+                && IsValidFileType()
                 && !string.IsNullOrWhiteSpace(FileUrl)
                 && FileUrl.Length <= 200
                 && IsValidUrl();

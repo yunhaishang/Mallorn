@@ -181,7 +181,7 @@ namespace CampusTrade.API.Models.Entities
         public bool IsTimeout(int timeoutMinutes = 30)
         {
             if (IsCompleted()) return false;
-            
+
             var timeoutTime = CreateTime.AddMinutes(timeoutMinutes);
             return DateTime.Now > timeoutTime;
         }
@@ -192,7 +192,7 @@ namespace CampusTrade.API.Models.Entities
         /// <returns>如果金额有效返回true</returns>
         public bool IsAmountValid()
         {
-            return Amount >= VirtualAccount.MinRechargeAmount && 
+            return Amount >= VirtualAccount.MinRechargeAmount &&
                    Amount <= VirtualAccount.MaxRechargeAmount;
         }
 
@@ -204,7 +204,7 @@ namespace CampusTrade.API.Models.Entities
         {
             var duration = GetProcessingDuration();
             var durationText = duration.HasValue ? $"，耗时{duration.Value.TotalMinutes:F1}分钟" : "";
-            
+
             return $"充值{GetFormattedAmount()}，状态：{Status}，创建时间：{CreateTime:yyyy-MM-dd HH:mm:ss}{durationText}";
         }
 
@@ -229,7 +229,7 @@ namespace CampusTrade.API.Models.Entities
             if (amount < VirtualAccount.MinRechargeAmount || amount > VirtualAccount.MaxRechargeAmount)
             {
                 throw new ArgumentException(
-                    $"充值金额必须在{VirtualAccount.MinRechargeAmount:F2}到{VirtualAccount.MaxRechargeAmount:F2}之间", 
+                    $"充值金额必须在{VirtualAccount.MinRechargeAmount:F2}到{VirtualAccount.MaxRechargeAmount:F2}之间",
                     nameof(amount));
             }
 

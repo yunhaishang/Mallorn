@@ -88,7 +88,7 @@ namespace CampusTrade.API.Models.Entities
             /// 未使用 - 验证码/令牌还未被使用
             /// </summary>
             public const int Unused = 0;
-            
+
             /// <summary>
             /// 已使用 - 验证码/令牌已被使用
             /// </summary>
@@ -104,7 +104,7 @@ namespace CampusTrade.API.Models.Entities
             /// 验证码方式 - 6位数字验证码
             /// </summary>
             Code,
-            
+
             /// <summary>
             /// 令牌方式 - 邮箱验证链接
             /// </summary>
@@ -156,10 +156,10 @@ namespace CampusTrade.API.Models.Entities
         {
             if (!string.IsNullOrEmpty(VerificationCode))
                 return VerificationType.Code;
-            
+
             if (!string.IsNullOrEmpty(Token))
                 return VerificationType.Token;
-            
+
             throw new InvalidOperationException("验证记录必须包含验证码或令牌");
         }
 

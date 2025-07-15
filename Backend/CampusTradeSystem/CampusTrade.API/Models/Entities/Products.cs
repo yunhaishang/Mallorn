@@ -137,12 +137,12 @@ namespace CampusTrade.API.Models.Entities
             /// 在售 - 商品正常销售中
             /// </summary>
             public const string OnSale = "在售";
-            
+
             /// <summary>
             /// 已下架 - 商品已被下架，不可购买
             /// </summary>
             public const string OffShelf = "已下架";
-            
+
             /// <summary>
             /// 交易中 - 商品正在交易过程中
             /// </summary>
@@ -158,17 +158,17 @@ namespace CampusTrade.API.Models.Entities
             /// 0-50元
             /// </summary>
             Low = 0,
-            
+
             /// <summary>
             /// 50-200元
             /// </summary>
             Medium = 1,
-            
+
             /// <summary>
             /// 200-500元
             /// </summary>
             High = 2,
-            
+
             /// <summary>
             /// 500元以上
             /// </summary>
@@ -186,8 +186,8 @@ namespace CampusTrade.API.Models.Entities
         /// <returns>是否有效</returns>
         public static bool IsValidStatus(string status)
         {
-            return status == ProductStatus.OnSale || 
-                   status == ProductStatus.OffShelf || 
+            return status == ProductStatus.OnSale ||
+                   status == ProductStatus.OffShelf ||
                    status == ProductStatus.InTransaction;
         }
 
@@ -235,7 +235,7 @@ namespace CampusTrade.API.Models.Entities
         {
             if (!IsValidStatus(newStatus))
                 throw new ArgumentException($"无效的商品状态: {newStatus}");
-            
+
             Status = newStatus;
         }
 
@@ -262,7 +262,7 @@ namespace CampusTrade.API.Models.Entities
         {
             if (days <= 0)
                 throw new ArgumentException("天数必须大于0");
-            
+
             AutoRemoveTime = DateTime.Now.AddDays(days);
         }
 

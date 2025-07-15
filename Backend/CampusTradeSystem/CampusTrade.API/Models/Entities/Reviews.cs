@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic; // Added for IEnumerable
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Collections.Generic; // Added for IEnumerable
 using System.Linq; // Added for Where, Select, ToList, Average
 
 namespace CampusTrade.API.Models.Entities
@@ -168,10 +168,10 @@ namespace CampusTrade.API.Models.Entities
         {
             if (string.IsNullOrWhiteSpace(reply))
                 throw new ArgumentException("回复内容不能为空", nameof(reply));
-            
+
             if (reply.Length > MaxReplyLength)
                 throw new ArgumentException($"回复内容不能超过{MaxReplyLength}个字符", nameof(reply));
-            
+
             SellerReply = reply;
         }
 
@@ -181,7 +181,7 @@ namespace CampusTrade.API.Models.Entities
         public string GetRatingLevelDescription()
         {
             if (!Rating.HasValue) return "未评分";
-            
+
             return Rating.Value switch
             {
                 >= 4.5m => RatingLevels.Excellent,
@@ -198,7 +198,7 @@ namespace CampusTrade.API.Models.Entities
         public string GetDescAccuracyLevel()
         {
             if (!DescAccuracy.HasValue) return "未评分";
-            
+
             return DescAccuracy.Value switch
             {
                 5 => "非常准确",
@@ -216,7 +216,7 @@ namespace CampusTrade.API.Models.Entities
         public string GetServiceAttitudeLevel()
         {
             if (!ServiceAttitude.HasValue) return "未评分";
-            
+
             return ServiceAttitude.Value switch
             {
                 5 => "非常好",
@@ -251,7 +251,7 @@ namespace CampusTrade.API.Models.Entities
         public string GetTimeAgoDescription()
         {
             var timeDiff = DateTime.Now - CreateTime;
-            
+
             if (timeDiff.TotalMinutes < 1)
                 return "刚刚";
             if (timeDiff.TotalMinutes < 60)
@@ -283,8 +283,8 @@ namespace CampusTrade.API.Models.Entities
         /// </summary>
         public bool IsHighQualityReview()
         {
-            return IsCompleteReview && 
-                   !string.IsNullOrWhiteSpace(Content) && 
+            return IsCompleteReview &&
+                   !string.IsNullOrWhiteSpace(Content) &&
                    Content.Length >= 10; // 至少10个字符的评价内容
         }
 
@@ -295,13 +295,13 @@ namespace CampusTrade.API.Models.Entities
         {
             var score = 0;
             var maxScore = 5;
-            
+
             if (Rating.HasValue) score++;
             if (DescAccuracy.HasValue) score++;
             if (ServiceAttitude.HasValue) score++;
             if (!string.IsNullOrWhiteSpace(Content)) score++;
             if (!string.IsNullOrWhiteSpace(SellerReply)) score++;
-            
+
             return (int)((double)score / maxScore * 100);
         }
         #endregion
@@ -326,7 +326,7 @@ namespace CampusTrade.API.Models.Entities
         /// <summary>
         /// 创建完整评价
         /// </summary>
-        public static Review CreateCompleteReview(int orderId, decimal rating, int descAccuracy, 
+        public static Review CreateCompleteReview(int orderId, decimal rating, int descAccuracy,
             int serviceAttitude, string content, bool isAnonymous = false)
         {
             return new Review
@@ -376,13 +376,13 @@ namespace CampusTrade.API.Models.Entities
         public static string GetStarRating(decimal? rating)
         {
             if (!rating.HasValue) return "☆☆☆☆☆";
-            
+
             var fullStars = (int)Math.Floor(rating.Value);
             var hasHalfStar = rating.Value - fullStars >= 0.5m;
             var emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
-            
-            return new string('★', fullStars) + 
-                   (hasHalfStar ? "☆" : "") + 
+
+            return new string('★', fullStars) +
+                   (hasHalfStar ? "☆" : "") +
                    new string('☆', emptyStars);
         }
 

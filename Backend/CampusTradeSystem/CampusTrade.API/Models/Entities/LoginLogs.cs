@@ -17,14 +17,14 @@ namespace CampusTrade.API.Models.Entities
         [Column("LOG_ID", TypeName = "NUMBER")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int LogId { get; set; }
-        
+
         /// <summary>
         /// 用户ID - 外键，对应Oracle中的user_id字段
         /// </summary>
         [Required]
         [Column("USER_ID", TypeName = "NUMBER")]
         public int UserId { get; set; }
-        
+
         /// <summary>
         /// IP地址 - 记录登录来源IP，对应Oracle中的ip_address字段
         /// 支持IPv4和IPv6格式，最大长度45字符
@@ -32,7 +32,7 @@ namespace CampusTrade.API.Models.Entities
         [Column("IP_ADDRESS", TypeName = "VARCHAR2(45)")]
         [StringLength(45)]
         public string? IpAddress { get; set; }
-        
+
         /// <summary>
         /// 登录时间 - 对应Oracle中的log_time字段，默认为当前时间
         /// </summary>
@@ -47,7 +47,7 @@ namespace CampusTrade.API.Models.Entities
         [Column("DEVICE_TYPE", TypeName = "VARCHAR2(20)")]
         [StringLength(20)]
         public string DeviceType { get; set; } = string.Empty;
-        
+
         /// <summary>
         /// 风险等级 - 对应Oracle中的risk_level字段
         /// 0=低风险，1=中风险，2=高风险
@@ -55,7 +55,7 @@ namespace CampusTrade.API.Models.Entities
         [Column("RISK_LEVEL", TypeName = "NUMBER")]
         [Range(0, 2, ErrorMessage = "风险等级必须在0-2之间")]
         public int? RiskLevel { get; set; }
-        
+
         // 导航属性：关联的用户
         [ForeignKey("UserId")]
         public virtual User? User { get; set; }
@@ -79,12 +79,12 @@ namespace CampusTrade.API.Models.Entities
             /// 低风险 - 正常登录行为
             /// </summary>
             public const int Low = 0;
-            
+
             /// <summary>
             /// 中风险 - 异常但可接受的登录行为
             /// </summary>
             public const int Medium = 1;
-            
+
             /// <summary>
             /// 高风险 - 可疑的登录行为，需要额外验证
             /// </summary>
@@ -98,8 +98,8 @@ namespace CampusTrade.API.Models.Entities
         /// <returns>是否有效</returns>
         public static bool IsValidDeviceType(string deviceType)
         {
-            return deviceType == DeviceTypes.Mobile 
-                || deviceType == DeviceTypes.PC 
+            return deviceType == DeviceTypes.Mobile
+                || deviceType == DeviceTypes.PC
                 || deviceType == DeviceTypes.Tablet;
         }
 
@@ -142,13 +142,13 @@ namespace CampusTrade.API.Models.Entities
                 return DeviceTypes.PC;
 
             userAgent = userAgent.ToLower();
-            
+
             if (userAgent.Contains("mobile") || userAgent.Contains("android") || userAgent.Contains("iphone"))
                 return DeviceTypes.Mobile;
-            
+
             if (userAgent.Contains("tablet") || userAgent.Contains("ipad"))
                 return DeviceTypes.Tablet;
-            
+
             return DeviceTypes.PC;
         }
     }

@@ -1,5 +1,5 @@
-using Microsoft.EntityFrameworkCore;
 using CampusTrade.API.Models.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampusTrade.API.Data
 {

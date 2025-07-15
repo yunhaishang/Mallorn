@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Collections.Generic;
 
 namespace CampusTrade.API.Models.Entities
 {
@@ -73,7 +73,7 @@ namespace CampusTrade.API.Models.Entities
             /// 普通订单 - 用户购买商品的标准订单
             /// </summary>
             public const string Normal = "normal";
-            
+
             /// <summary>
             /// 换物请求 - 用户之间商品交换的订单
             /// </summary>
@@ -130,7 +130,7 @@ namespace CampusTrade.API.Models.Entities
         {
             if (!IsValidOrderType(newOrderType))
                 throw new ArgumentException($"无效的订单类型: {newOrderType}");
-            
+
             OrderType = newOrderType;
         }
 

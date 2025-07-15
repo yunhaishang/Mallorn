@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic; // Added for List
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Collections.Generic; // Added for List
 
 namespace CampusTrade.API.Models.Entities
 {
@@ -141,7 +141,7 @@ namespace CampusTrade.API.Models.Entities
         public string GetTimeSinceAction()
         {
             var timeDiff = DateTime.Now - LogTime;
-            
+
             if (timeDiff.TotalMinutes < 1)
                 return "刚刚";
             if (timeDiff.TotalMinutes < 60)

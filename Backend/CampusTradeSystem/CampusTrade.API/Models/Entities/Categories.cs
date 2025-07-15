@@ -107,13 +107,13 @@ namespace CampusTrade.API.Models.Entities
             {
                 var paths = new List<string>();
                 var current = this;
-                
+
                 while (current != null)
                 {
                     paths.Insert(0, current.Name);
                     current = current.Parent;
                 }
-                
+
                 return string.Join(" > ", paths);
             }
         }
@@ -130,13 +130,13 @@ namespace CampusTrade.API.Models.Entities
         {
             var ancestors = new List<Category>();
             var current = Parent;
-            
+
             while (current != null)
             {
                 ancestors.Add(current);
                 current = current.Parent;
             }
-            
+
             return ancestors;
         }
 
@@ -147,13 +147,13 @@ namespace CampusTrade.API.Models.Entities
         public List<Category> GetDescendants()
         {
             var descendants = new List<Category>();
-            
+
             foreach (var child in Children)
             {
                 descendants.Add(child);
                 descendants.AddRange(child.GetDescendants());
             }
-            
+
             return descendants;
         }
 
@@ -165,13 +165,13 @@ namespace CampusTrade.API.Models.Entities
         {
             var path = new List<int>();
             var current = this;
-            
+
             while (current != null)
             {
                 path.Insert(0, current.CategoryId);
                 current = current.Parent;
             }
-            
+
             return path;
         }
 
@@ -186,7 +186,7 @@ namespace CampusTrade.API.Models.Entities
             // 不能将自己设为父分类
             if (potentialParentId == CategoryId)
                 return false;
-            
+
             // 不能将自己的后代设为父分类
             var descendantIds = GetDescendants().Select(d => d.CategoryId).ToList();
             return !descendantIds.Contains(potentialParentId);
@@ -199,7 +199,7 @@ namespace CampusTrade.API.Models.Entities
         /// <returns>是否唯一</returns>
         public bool IsNameUniqueInSiblings(IEnumerable<Category> siblings)
         {
-            return !siblings.Any(s => s.CategoryId != CategoryId && 
+            return !siblings.Any(s => s.CategoryId != CategoryId &&
                                      s.Name.Equals(Name, StringComparison.OrdinalIgnoreCase));
         }
 
@@ -220,12 +220,12 @@ namespace CampusTrade.API.Models.Entities
         public int GetTotalProductCount()
         {
             int count = Products?.Count ?? 0;
-            
+
             foreach (var child in Children)
             {
                 count += child.GetTotalProductCount();
             }
-            
+
             return count;
         }
 
@@ -242,7 +242,7 @@ namespace CampusTrade.API.Models.Entities
         {
             var categoryList = allCategories.ToList();
             var categoryDict = categoryList.ToDictionary(c => c.CategoryId);
-            
+
             // 设置父子关系
             foreach (var category in categoryList)
             {
@@ -253,7 +253,7 @@ namespace CampusTrade.API.Models.Entities
                     parent.Children.Add(category);
                 }
             }
-            
+
             // 返回根分类
             return categoryList.Where(c => c.IsRoot).ToList();
         }
@@ -266,12 +266,12 @@ namespace CampusTrade.API.Models.Entities
         public static List<Category> FlattenTree(IEnumerable<Category> rootCategories)
         {
             var result = new List<Category>();
-            
+
             foreach (var root in rootCategories)
             {
                 FlattenTreeRecursive(root, result);
             }
-            
+
             return result;
         }
 
@@ -283,7 +283,7 @@ namespace CampusTrade.API.Models.Entities
         private static void FlattenTreeRecursive(Category category, List<Category> result)
         {
             result.Add(category);
-            
+
             foreach (var child in category.Children.OrderBy(c => c.Name))
             {
                 FlattenTreeRecursive(child, result);

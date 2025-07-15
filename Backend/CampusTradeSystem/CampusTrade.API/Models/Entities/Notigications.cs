@@ -211,7 +211,7 @@ namespace CampusTrade.API.Models.Entities
         public bool ShouldRetryNow()
         {
             if (!CanRetry()) return false;
-            
+
             var nextRetryTime = LastAttemptTime.AddMinutes(DefaultRetryIntervalMinutes * Math.Pow(2, RetryCount));
             return DateTime.Now >= nextRetryTime;
         }
@@ -222,7 +222,7 @@ namespace CampusTrade.API.Models.Entities
         public DateTime GetNextRetryTime()
         {
             if (!CanRetry()) return DateTime.MaxValue;
-            
+
             return LastAttemptTime.AddMinutes(DefaultRetryIntervalMinutes * Math.Pow(2, RetryCount));
         }
 
@@ -247,7 +247,7 @@ namespace CampusTrade.API.Models.Entities
         {
             if (Template == null)
                 return "模板未加载";
-            
+
             return Template.RenderContentFromJson(TemplateParams);
         }
 
@@ -266,7 +266,7 @@ namespace CampusTrade.API.Models.Entities
         {
             if (string.IsNullOrWhiteSpace(TemplateParams))
                 return null;
-            
+
             try
             {
                 return JsonSerializer.Deserialize<Dictionary<string, object>>(TemplateParams);
@@ -292,10 +292,10 @@ namespace CampusTrade.API.Models.Entities
         {
             var content = GetRenderedContent();
             const int maxLength = 50;
-            
+
             if (content.Length <= maxLength)
                 return content;
-            
+
             return content.Substring(0, maxLength) + "...";
         }
 
@@ -306,13 +306,13 @@ namespace CampusTrade.API.Models.Entities
         {
             if (IsSuccessful())
                 return "发送成功";
-            
+
             if (HasReachedMaxRetries())
                 return $"已达到最大重试次数({MaxRetryCount}次)";
-            
+
             if (CanRetry())
                 return $"可重试 ({RetryCount}/{MaxRetryCount})";
-            
+
             return "无需重试";
         }
 
@@ -345,7 +345,7 @@ namespace CampusTrade.API.Models.Entities
         /// <summary>
         /// 创建订单相关通知
         /// </summary>
-        public static Notification CreateOrderNotification(int templateId, int recipientId, int orderId, 
+        public static Notification CreateOrderNotification(int templateId, int recipientId, int orderId,
             Dictionary<string, object>? parameters = null)
         {
             var notification = new Notification
@@ -358,17 +358,17 @@ namespace CampusTrade.API.Models.Entities
                 CreatedAt = DateTime.Now,
                 LastAttemptTime = DateTime.Now
             };
-            
+
             if (parameters != null)
                 notification.SetTemplateParameters(parameters);
-            
+
             return notification;
         }
 
         /// <summary>
         /// 创建系统通知
         /// </summary>
-        public static Notification CreateSystemNotification(int templateId, int recipientId, 
+        public static Notification CreateSystemNotification(int templateId, int recipientId,
             Dictionary<string, object>? parameters = null)
         {
             var notification = new Notification
@@ -381,21 +381,21 @@ namespace CampusTrade.API.Models.Entities
                 CreatedAt = DateTime.Now,
                 LastAttemptTime = DateTime.Now
             };
-            
+
             if (parameters != null)
                 notification.SetTemplateParameters(parameters);
-            
+
             return notification;
         }
 
         /// <summary>
         /// 创建商品相关通知
         /// </summary>
-        public static Notification CreateProductNotification(int templateId, int recipientId, 
+        public static Notification CreateProductNotification(int templateId, int recipientId,
             int productId, Dictionary<string, object>? parameters = null)
         {
             var baseParams = new Dictionary<string, object> { { "productId", productId } };
-            
+
             if (parameters != null)
             {
                 foreach (var param in parameters)
@@ -403,7 +403,7 @@ namespace CampusTrade.API.Models.Entities
                     baseParams[param.Key] = param.Value;
                 }
             }
-            
+
             var notification = new Notification
             {
                 TemplateId = templateId,
@@ -414,7 +414,7 @@ namespace CampusTrade.API.Models.Entities
                 CreatedAt = DateTime.Now,
                 LastAttemptTime = DateTime.Now
             };
-            
+
             notification.SetTemplateParameters(baseParams);
             return notification;
         }
@@ -422,11 +422,11 @@ namespace CampusTrade.API.Models.Entities
         /// <summary>
         /// 批量创建通知
         /// </summary>
-        public static List<Notification> CreateBatchNotifications(int templateId, List<int> recipientIds, 
+        public static List<Notification> CreateBatchNotifications(int templateId, List<int> recipientIds,
             int? orderId = null, Dictionary<string, object>? parameters = null)
         {
             var notifications = new List<Notification>();
-            
+
             foreach (var recipientId in recipientIds)
             {
                 var notification = new Notification
@@ -439,13 +439,13 @@ namespace CampusTrade.API.Models.Entities
                     CreatedAt = DateTime.Now,
                     LastAttemptTime = DateTime.Now
                 };
-                
+
                 if (parameters != null)
                     notification.SetTemplateParameters(parameters);
-                
+
                 notifications.Add(notification);
             }
-            
+
             return notifications;
         }
         #endregion

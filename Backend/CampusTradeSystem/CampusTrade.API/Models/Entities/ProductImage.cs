@@ -56,12 +56,12 @@ namespace CampusTrade.API.Models.Entities
             /// 主图 - 商品的主要展示图片
             /// </summary>
             Main,
-            
+
             /// <summary>
             /// 详情图 - 商品的详细图片
             /// </summary>
             Detail,
-            
+
             /// <summary>
             /// 缩略图 - 用于列表展示的小图
             /// </summary>
@@ -77,7 +77,7 @@ namespace CampusTrade.API.Models.Entities
             public const string PNG = ".png";
             public const string GIF = ".gif";
             public const string WEBP = ".webp";
-            
+
             /// <summary>
             /// 获取所有支持的格式
             /// </summary>
@@ -127,4 +127,4 @@ namespace CampusTrade.API.Models.Entities
             return IsSupportedFormat();
         }
     }
-} 
+}

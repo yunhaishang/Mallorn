@@ -131,27 +131,27 @@ namespace CampusTrade.API.Models.Entities
             /// 待付款 - 订单已创建，等待买家付款
             /// </summary>
             public const string PendingPayment = "待付款";
-            
+
             /// <summary>
             /// 已付款 - 买家已完成付款，等待卖家发货
             /// </summary>
             public const string Paid = "已付款";
-            
+
             /// <summary>
             /// 已发货 - 卖家已发货，商品在运输途中
             /// </summary>
             public const string Shipped = "已发货";
-            
+
             /// <summary>
             /// 已送达 - 商品已送达买家，等待确认收货
             /// </summary>
             public const string Delivered = "已送达";
-            
+
             /// <summary>
             /// 已完成 - 交易完成，买家已确认收货
             /// </summary>
             public const string Completed = "已完成";
-            
+
             /// <summary>
             /// 已取消 - 订单被取消（超时未付款、主动取消等）
             /// </summary>
