@@ -8,6 +8,7 @@ namespace CampusTrade.API.Models.Entities
     {
         [Key]
         [Column("USER_ID")]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int UserId { get; set; }
 
         [Required]
@@ -42,10 +43,10 @@ namespace CampusTrade.API.Models.Entities
         public string? Phone { get; set; }
 
         [Column("CREATED_AT")]
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime CreatedAt { get; set; }
 
         [Column("UPDATED_AT")]
-        public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime UpdatedAt { get; set; }
 
         [Column("IS_ACTIVE")]
         public int IsActive { get; set; } = 1;
@@ -62,7 +63,7 @@ namespace CampusTrade.API.Models.Entities
         public int LoginCount { get; set; } = 0;
 
         [Column("IS_LOCKED")]
-        public bool IsLocked { get; set; } = false;
+        public int IsLocked { get; set; } = 0;
 
         [Column("LOCKOUT_END")]
         public DateTime? LockoutEnd { get; set; }
@@ -71,17 +72,17 @@ namespace CampusTrade.API.Models.Entities
         public int FailedLoginAttempts { get; set; } = 0;
 
         [Column("TWO_FACTOR_ENABLED")]
-        public bool TwoFactorEnabled { get; set; } = false;
+        public int TwoFactorEnabled { get; set; } = 0;
 
         [Column("PASSWORD_CHANGED_AT")]
         public DateTime? PasswordChangedAt { get; set; }
 
         [Column("SECURITY_STAMP")]
         [StringLength(256)]
-        public string SecurityStamp { get; set; } = Guid.NewGuid().ToString();
+        public string SecurityStamp { get; set; } = string.Empty;
 
         [Column("EMAIL_VERIFIED")]
-        public bool EmailVerified { get; set; } = false;
+        public int EmailVerified { get; set; } = 0;
 
         [Column("EMAIL_VERIFICATION_TOKEN")]
         [StringLength(256)]
