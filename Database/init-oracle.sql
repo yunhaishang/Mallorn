@@ -29,7 +29,7 @@ GRANT CREATE SEQUENCE TO CAMPUS_TRADE_USER;
 GRANT CREATE TRIGGER TO CAMPUS_TRADE_USER;
 
 -- 连接到用户
-CONNECT CAMPUS_TRADE_USER/CampusTrade123!@XEPDB1;
+CONNECT CAMPUS_TRADE_USER/"CampusTrade123!@XEPDB1";
 
 -- ================================================================
 -- 创建序列 (用于自增ID)
@@ -295,20 +295,43 @@ CREATE TABLE exchange_requests (
 );
 
 -- ================================================================
--- 18. 通知表 (notifications)
+-- 18. 通知模板表 (notification_templates)
+-- ================================================================
+CREATE TABLE notification_templates (
+    template_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    template_name VARCHAR2(100) NOT NULL,
+    template_type VARCHAR2(20) CHECK (template_type IN ('商品相关','交易相关','评价相关','系统通知')),
+    template_content CLOB NOT NULL,
+    description VARCHAR2(500),
+    priority NUMBER CHECK (priority BETWEEN 1 AND 5) DEFAULT 2,
+    is_active NUMBER DEFAULT 1 CHECK (is_active IN (0,1)),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP,
+    created_by NUMBER,
+    CONSTRAINT fk_template_creator FOREIGN KEY (created_by) REFERENCES users(user_id)
+);
+
+-- ================================================================
+-- 19. 通知表 (notifications) 
 -- ================================================================
 CREATE TABLE notifications (
     notification_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    order_id NUMBER NOT NULL,
-    content CLOB NOT NULL,
+    template_id NUMBER NOT NULL,
+    recipient_id NUMBER NOT NULL,
+    order_id NUMBER,
+    template_params CLOB,
     send_status VARCHAR2(20) DEFAULT '待发送' CHECK (send_status IN ('待发送','成功','失败')),
     retry_count NUMBER DEFAULT 0,
     last_attempt_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sent_at TIMESTAMP,
+    CONSTRAINT fk_notification_template FOREIGN KEY (template_id) REFERENCES notification_templates(template_id),
+    CONSTRAINT fk_notification_recipient FOREIGN KEY (recipient_id) REFERENCES users(user_id),
     CONSTRAINT fk_notification_order FOREIGN KEY (order_id) REFERENCES abstract_orders(abstract_order_id)
 );
 
 -- ================================================================
--- 19. 评价表 (reviews)
+-- 20. 评价表 (reviews)
 -- ================================================================
 CREATE TABLE reviews (
     review_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -324,7 +347,7 @@ CREATE TABLE reviews (
 );
 
 -- ================================================================
--- 20. 举报表 (reports)
+-- 21. 举报表 (reports)
 -- ================================================================
 CREATE TABLE reports (
     report_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -340,7 +363,7 @@ CREATE TABLE reports (
 );
 
 -- ================================================================
--- 21. 举报证据表 (report_evidence)
+-- 22. 举报证据表 (report_evidence)
 -- ================================================================
 CREATE TABLE report_evidence (
     evidence_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
