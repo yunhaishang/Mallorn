@@ -1,7 +1,7 @@
+using System.IO;
 using CampusTrade.API.Services.File;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.IO;
 using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Services
@@ -61,7 +61,7 @@ namespace CampusTrade.Tests.UnitTests.Services
             // Arrange
             var originalFilePath = Path.Combine(_testPath, "test.txt");
             var thumbnailFilePath = Path.Combine(_testPath, "test_thumb.txt");
-            
+
             // Create a text file
             await File.WriteAllTextAsync(originalFilePath, "This is a text file");
 

@@ -1,7 +1,7 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using CampusTrade.API.Services.File;
 using CampusTrade.API.Models.DTOs;
+using CampusTrade.API.Services.File;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CampusTrade.API.Controllers
 {
@@ -53,7 +53,7 @@ namespace CampusTrade.API.Controllers
             }
 
             var result = await _fileService.UploadFileAsync(file, FileType.ProductImage, true);
-            
+
             if (result.Success)
             {
                 return Ok(new
@@ -89,7 +89,7 @@ namespace CampusTrade.API.Controllers
             }
 
             var result = await _fileService.UploadFileAsync(file, FileType.ReportEvidence, true);
-            
+
             if (result.Success)
             {
                 return Ok(new
@@ -125,7 +125,7 @@ namespace CampusTrade.API.Controllers
             }
 
             var result = await _fileService.UploadFileAsync(file, FileType.UserAvatar, true);
-            
+
             if (result.Success)
             {
                 return Ok(new
@@ -156,7 +156,7 @@ namespace CampusTrade.API.Controllers
         public async Task<IActionResult> DownloadFile(string fileName)
         {
             var result = await _fileService.DownloadFileAsync(fileName);
-            
+
             if (result.Success && result.FileStream != null)
             {
                 return File(result.FileStream, result.ContentType, result.FileName);
@@ -180,7 +180,7 @@ namespace CampusTrade.API.Controllers
             }
 
             var result = await _fileService.DownloadFileByUrlAsync(request.FileUrl);
-            
+
             if (result.Success && result.FileStream != null)
             {
                 return File(result.FileStream, result.ContentType, result.FileName);
@@ -200,7 +200,7 @@ namespace CampusTrade.API.Controllers
         public async Task<IActionResult> PreviewFile(string fileType, string fileName)
         {
             var result = await _fileService.DownloadFileAsync(fileName);
-            
+
             if (result.Success && result.FileStream != null)
             {
                 // 设置缓存头
@@ -220,7 +220,7 @@ namespace CampusTrade.API.Controllers
         public async Task<IActionResult> DeleteFile(string fileName)
         {
             var result = await _fileService.DeleteFileAsync(fileName);
-            
+
             if (result)
             {
                 return Ok(new { success = true, message = "文件删除成功" });
@@ -243,7 +243,7 @@ namespace CampusTrade.API.Controllers
             }
 
             var result = await _fileService.DeleteFileByUrlAsync(request.FileUrl);
-            
+
             if (result)
             {
                 return Ok(new { success = true, message = "文件删除成功" });
@@ -290,7 +290,7 @@ namespace CampusTrade.API.Controllers
         public async Task<IActionResult> GetFileInfo(string fileName)
         {
             var fileInfo = await _fileService.GetFileInfoAsync(fileName);
-            
+
             if (fileInfo != null)
             {
                 return Ok(new
@@ -320,7 +320,7 @@ namespace CampusTrade.API.Controllers
             }
 
             var fileInfo = await _fileService.GetFileInfoByUrlAsync(request.FileUrl);
-            
+
             if (fileInfo != null)
             {
                 return Ok(new
@@ -358,11 +358,11 @@ namespace CampusTrade.API.Controllers
             }
 
             var results = new List<object>();
-            
+
             foreach (var file in files)
             {
                 var result = await _fileService.UploadFileAsync(file, parsedFileType, true);
-                
+
                 if (result.Success)
                 {
                     results.Add(new
@@ -436,12 +436,12 @@ namespace CampusTrade.API.Controllers
             }
 
             var results = new List<object>();
-            
+
             foreach (var fileUrl in request.FileUrls)
             {
                 var exists = await _fileService.FileExistsByUrlAsync(fileUrl);
                 var fileName = _fileService.ExtractFileNameFromUrl(fileUrl);
-                
+
                 results.Add(new
                 {
                     url = fileUrl,

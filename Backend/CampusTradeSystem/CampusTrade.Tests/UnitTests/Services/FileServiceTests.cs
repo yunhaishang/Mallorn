@@ -1,10 +1,10 @@
+using System.IO;
+using System.Text;
 using CampusTrade.API.Services.File;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.IO;
-using System.Text;
 using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Services
@@ -24,7 +24,7 @@ namespace CampusTrade.Tests.UnitTests.Services
         {
             _mockLogger = new Mock<ILogger<FileService>>();
             _mockThumbnailService = new Mock<IThumbnailService>();
-            
+
             _testUploadPath = Path.Combine(Path.GetTempPath(), "file-service-tests");
             _options = new FileStorageOptions
             {
@@ -645,13 +645,13 @@ namespace CampusTrade.Tests.UnitTests.Services
         {
             var mockFile = new Mock<IFormFile>();
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            
+
             mockFile.Setup(f => f.FileName).Returns(fileName);
             mockFile.Setup(f => f.ContentType).Returns(contentType);
             mockFile.Setup(f => f.Length).Returns(stream.Length);
             mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
             mockFile.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns((Stream target, CancellationToken token) => 
+                .Returns((Stream target, CancellationToken token) =>
                 {
                     stream.Position = 0;
                     return stream.CopyToAsync(target, token);

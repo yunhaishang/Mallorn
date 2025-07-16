@@ -1,5 +1,5 @@
-using Microsoft.Extensions.Options;
 using System.IO;
+using Microsoft.Extensions.Options;
 
 namespace CampusTrade.API.Services.File
 {
@@ -77,7 +77,7 @@ namespace CampusTrade.API.Services.File
                     var thumbnailFileName = GetThumbnailFileName(uniqueFileName);
                     var thumbnailPath = Path.Combine(_uploadPath, GetFileTypeFolder(fileType), thumbnailFileName);
 
-                    if (await _thumbnailService.GenerateThumbnailAsync(filePath, thumbnailPath, 
+                    if (await _thumbnailService.GenerateThumbnailAsync(filePath, thumbnailPath,
                         _options.ThumbnailWidth, _options.ThumbnailHeight, _options.ThumbnailQuality))
                     {
                         result.ThumbnailFileName = thumbnailFileName;
@@ -308,7 +308,7 @@ namespace CampusTrade.API.Services.File
                 // 从URL路径中提取文件类型文件夹
                 var uri = new Uri(fileUrl);
                 var pathSegments = uri.LocalPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                
+
                 // 查找files/后面的文件夹名
                 var filesIndex = Array.IndexOf(pathSegments, "files");
                 if (filesIndex >= 0 && filesIndex + 1 < pathSegments.Length)
@@ -399,7 +399,7 @@ namespace CampusTrade.API.Services.File
         private string FindFilePath(string fileName)
         {
             var folders = new[] { "products", "reports", "avatars", "others" };
-            
+
             foreach (var folder in folders)
             {
                 var filePath = Path.Combine(_uploadPath, folder, fileName);

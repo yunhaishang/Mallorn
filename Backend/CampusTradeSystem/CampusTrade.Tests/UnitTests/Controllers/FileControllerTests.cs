@@ -1,11 +1,11 @@
+using System.IO;
+using System.Text;
 using CampusTrade.API.Controllers;
 using CampusTrade.API.Services.File;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.IO;
-using System.Text;
 using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Controllers
@@ -204,7 +204,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             // Arrange
             var fileName = "test.jpg";
             var fileInfo = new FileInfo(Path.Combine(Path.GetTempPath(), fileName));
-            
+
             _mockFileService.Setup(x => x.GetFileInfoAsync(fileName))
                 .ReturnsAsync(fileInfo);
 
@@ -297,13 +297,13 @@ namespace CampusTrade.Tests.UnitTests.Controllers
         {
             var mockFile = new Mock<IFormFile>();
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            
+
             mockFile.Setup(f => f.FileName).Returns(fileName);
             mockFile.Setup(f => f.ContentType).Returns(contentType);
             mockFile.Setup(f => f.Length).Returns(stream.Length);
             mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
             mockFile.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns((Stream target, CancellationToken token) => 
+                .Returns((Stream target, CancellationToken token) =>
                 {
                     stream.Position = 0;
                     return stream.CopyToAsync(target, token);

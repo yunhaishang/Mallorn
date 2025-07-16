@@ -150,7 +150,7 @@ public static class ServiceCollectionExtensions
                       .AllowCredentials()
                       .SetPreflightMaxAge(TimeSpan.FromMinutes(30));
             });
-            
+
             // 添加开发环境的宽松CORS策略，支持file://协议和本地测试
             options.AddPolicy("DevelopmentCors", policy =>
             {
