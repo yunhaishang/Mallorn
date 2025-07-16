@@ -35,8 +35,8 @@ public class ApiEndToEndTests : IClassFixture<WebApplicationFactory<Program>>, I
                 // 使用内存数据库进行测试
                 services.Remove(services.SingleOrDefault(d => d.ServiceType == typeof(CampusTrade.API.Data.CampusTradeDbContext))!);
 
-                // 添加测试专用的数据库上下文
-                var context = TestDbContextFactory.CreateInMemoryDbContext("EndToEndTest");
+                // 添加测试专用的数据库上下文（使用默认的数据播种）
+                var context = TestDbContextFactory.CreateInMemoryDbContext("EndToEndTest", seedData: true);
                 services.AddSingleton(context);
 
                 // 配置测试日志

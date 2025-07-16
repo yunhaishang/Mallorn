@@ -1,6 +1,7 @@
 using CampusTrade.API.Data;
 using CampusTrade.API.Models.Entities;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CampusTrade.Tests.Helpers;
@@ -13,16 +14,27 @@ public static class TestDbContextFactory
     /// <summary>
     /// 创建内存测试数据库上下文
     /// </summary>
-    public static CampusTradeDbContext CreateInMemoryDbContext(string? databaseName = null)
+    public static CampusTradeDbContext CreateInMemoryDbContext(string? databaseName = null, bool seedData = true)
     {
         var dbName = databaseName ?? Guid.NewGuid().ToString();
 
         var options = new DbContextOptionsBuilder<CampusTradeDbContext>()
             .UseInMemoryDatabase(databaseName: dbName)
+            .ConfigureWarnings(warnings => warnings.Ignore(InMemoryEventId.TransactionIgnoredWarning))
             .Options;
 
         var context = new CampusTradeDbContext(options);
+        
+        if (seedData)
+        {
         SeedTestData(context);
+        }
+        else
+        {
+            // 只确保数据库创建，不播种数据
+            context.Database.EnsureCreated();
+        }
+        
         return context;
     }
 
@@ -96,7 +108,7 @@ public static class TestDbContextFactory
                 UserAgent = "Test Browser",
                 CreatedAt = DateTime.UtcNow.AddHours(-2),
                 ExpiryDate = DateTime.UtcNow.AddDays(7),
-                IsRevoked = false
+                IsRevoked = 0 // 0 = not revoked
             },
             new RefreshToken
             {
@@ -108,7 +120,7 @@ public static class TestDbContextFactory
                 UserAgent = "Test Mobile",
                 CreatedAt = DateTime.UtcNow.AddDays(-10),
                 ExpiryDate = DateTime.UtcNow.AddDays(-3), // 已过期
-                IsRevoked = false
+                IsRevoked = 0 // 0 = not revoked
             }
         };
 

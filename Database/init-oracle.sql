@@ -704,6 +704,6 @@ SELECT '========================================' AS separator FROM dual;
 DESC users;
 
 SELECT '========================================' AS separator FROM dual;
-SELECT 'Database initialization complete with all fixes applied!' AS final_message FROM dual;
+SELECT 'Database initialization complete with all fixes applied!' AS final_message FROM dual; 
 SELECT 'Ready for application usage!' AS status FROM dual;
 SELECT '========================================' AS separator FROM dual; 

@@ -1,4 +1,6 @@
 using CampusTrade.API.Options;
+using CampusTrade.API.Repositories.Interfaces;
+using CampusTrade.API.Repositories.Implementations;
 using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Utils.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -105,6 +107,25 @@ public static class ServiceCollectionExtensions
                 policy.RequireClaim("EmailVerified", "True");
             });
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// 添加Repository和数据访问服务
+    /// </summary>
+    /// <param name="services">服务集合</param>
+    /// <returns>服务集合</returns>
+    public static IServiceCollection AddRepositoryServices(this IServiceCollection services)
+    {
+        // 注册Repository服务
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        
+        // 注册具体的Repository实现
+        services.AddScoped<IUserRepository, UserRepository>();
+        
+        // 注册工作单元
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }
