@@ -232,6 +232,105 @@ namespace CampusTrade.API.Services.File
             return allowedTypes.Contains(extension);
         }
 
+        /// <summary>
+        /// 通过URL下载文件
+        /// </summary>
+        public async Task<FileDownloadResult> DownloadFileByUrlAsync(string fileUrl)
+        {
+            var fileName = ExtractFileNameFromUrl(fileUrl);
+            return await DownloadFileAsync(fileName);
+        }
+
+        /// <summary>
+        /// 通过URL删除文件
+        /// </summary>
+        public async Task<bool> DeleteFileByUrlAsync(string fileUrl)
+        {
+            var fileName = ExtractFileNameFromUrl(fileUrl);
+            return await DeleteFileAsync(fileName);
+        }
+
+        /// <summary>
+        /// 通过URL检查文件是否存在
+        /// </summary>
+        public async Task<bool> FileExistsByUrlAsync(string fileUrl)
+        {
+            var fileName = ExtractFileNameFromUrl(fileUrl);
+            return await FileExistsAsync(fileName);
+        }
+
+        /// <summary>
+        /// 通过URL获取文件信息
+        /// </summary>
+        public async Task<FileInfo?> GetFileInfoByUrlAsync(string fileUrl)
+        {
+            var fileName = ExtractFileNameFromUrl(fileUrl);
+            return await GetFileInfoAsync(fileName);
+        }
+
+        /// <summary>
+        /// 从文件URL提取文件名
+        /// </summary>
+        public string ExtractFileNameFromUrl(string fileUrl)
+        {
+            if (string.IsNullOrEmpty(fileUrl))
+            {
+                return string.Empty;
+            }
+
+            try
+            {
+                // 处理完整URL格式: http://localhost:5085/api/file/files/products/filename.jpg
+                var uri = new Uri(fileUrl);
+                var fileName = Path.GetFileName(uri.LocalPath);
+                return fileName;
+            }
+            catch
+            {
+                // 如果不是完整URL，尝试从路径中提取
+                var fileName = Path.GetFileName(fileUrl);
+                return fileName;
+            }
+        }
+
+        /// <summary>
+        /// 从文件URL提取文件类型
+        /// </summary>
+        public FileType? ExtractFileTypeFromUrl(string fileUrl)
+        {
+            if (string.IsNullOrEmpty(fileUrl))
+            {
+                return null;
+            }
+
+            try
+            {
+                // 从URL路径中提取文件类型文件夹
+                var uri = new Uri(fileUrl);
+                var pathSegments = uri.LocalPath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                
+                // 查找files/后面的文件夹名
+                var filesIndex = Array.IndexOf(pathSegments, "files");
+                if (filesIndex >= 0 && filesIndex + 1 < pathSegments.Length)
+                {
+                    var folder = pathSegments[filesIndex + 1];
+                    return folder switch
+                    {
+                        "products" => FileType.ProductImage,
+                        "reports" => FileType.ReportEvidence,
+                        "avatars" => FileType.UserAvatar,
+                        _ => null
+                    };
+                }
+            }
+            catch
+            {
+                // 如果解析失败，返回null
+            }
+
+            return null;
+        }
+
         #region 私有方法
 
         /// <summary>

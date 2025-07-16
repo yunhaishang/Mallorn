@@ -6,6 +6,22 @@ using CampusTrade.API.Models.DTOs;
 namespace CampusTrade.API.Controllers
 {
     /// <summary>
+    /// 文件URL请求
+    /// </summary>
+    public class FileUrlRequest
+    {
+        public string FileUrl { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// 批量文件URL请求
+    /// </summary>
+    public class BatchFileUrlRequest
+    {
+        public List<string> FileUrls { get; set; } = new();
+    }
+
+    /// <summary>
     /// 文件管理控制器
     /// </summary>
     [ApiController]
@@ -150,6 +166,30 @@ namespace CampusTrade.API.Controllers
         }
 
         /// <summary>
+        /// 通过URL下载文件
+        /// </summary>
+        /// <param name="request">包含文件URL的请求</param>
+        /// <returns>文件流</returns>
+        [HttpPost("download/by-url")]
+        [AllowAnonymous]
+        public async Task<IActionResult> DownloadFileByUrl([FromBody] FileUrlRequest request)
+        {
+            if (string.IsNullOrEmpty(request.FileUrl))
+            {
+                return BadRequest(new { message = "文件URL不能为空" });
+            }
+
+            var result = await _fileService.DownloadFileByUrlAsync(request.FileUrl);
+            
+            if (result.Success && result.FileStream != null)
+            {
+                return File(result.FileStream, result.ContentType, result.FileName);
+            }
+
+            return NotFound(new { message = result.ErrorMessage ?? "文件不存在" });
+        }
+
+        /// <summary>
         /// 预览文件（直接访问）
         /// </summary>
         /// <param name="fileType">文件类型</param>
@@ -164,7 +204,7 @@ namespace CampusTrade.API.Controllers
             if (result.Success && result.FileStream != null)
             {
                 // 设置缓存头
-                Response.Headers.Add("Cache-Control", "public, max-age=3600"); // 1小时缓存
+                Response.Headers["Cache-Control"] = "public, max-age=3600"; // 1小时缓存
                 return File(result.FileStream, result.ContentType);
             }
 
@@ -190,6 +230,29 @@ namespace CampusTrade.API.Controllers
         }
 
         /// <summary>
+        /// 通过URL删除文件
+        /// </summary>
+        /// <param name="request">包含文件URL的请求</param>
+        /// <returns>删除结果</returns>
+        [HttpDelete("by-url")]
+        public async Task<IActionResult> DeleteFileByUrl([FromBody] FileUrlRequest request)
+        {
+            if (string.IsNullOrEmpty(request.FileUrl))
+            {
+                return BadRequest(new { message = "文件URL不能为空" });
+            }
+
+            var result = await _fileService.DeleteFileByUrlAsync(request.FileUrl);
+            
+            if (result)
+            {
+                return Ok(new { success = true, message = "文件删除成功" });
+            }
+
+            return NotFound(new { success = false, message = "文件不存在或删除失败" });
+        }
+
+        /// <summary>
         /// 检查文件是否存在
         /// </summary>
         /// <param name="fileName">文件名</param>
@@ -199,6 +262,23 @@ namespace CampusTrade.API.Controllers
         {
             var exists = await _fileService.FileExistsAsync(fileName);
             return Ok(new { exists });
+        }
+
+        /// <summary>
+        /// 通过URL检查文件是否存在
+        /// </summary>
+        /// <param name="request">包含文件URL的请求</param>
+        /// <returns>是否存在</returns>
+        [HttpPost("exists/by-url")]
+        public async Task<IActionResult> CheckFileExistsByUrl([FromBody] FileUrlRequest request)
+        {
+            if (string.IsNullOrEmpty(request.FileUrl))
+            {
+                return BadRequest(new { message = "文件URL不能为空" });
+            }
+
+            var exists = await _fileService.FileExistsByUrlAsync(request.FileUrl);
+            return Ok(new { exists, url = request.FileUrl });
         }
 
         /// <summary>
@@ -220,6 +300,37 @@ namespace CampusTrade.API.Controllers
                     createdAt = fileInfo.CreationTime,
                     modifiedAt = fileInfo.LastWriteTime,
                     extension = fileInfo.Extension
+                });
+            }
+
+            return NotFound(new { message = "文件不存在" });
+        }
+
+        /// <summary>
+        /// 通过URL获取文件信息
+        /// </summary>
+        /// <param name="request">包含文件URL的请求</param>
+        /// <returns>文件信息</returns>
+        [HttpPost("info/by-url")]
+        public async Task<IActionResult> GetFileInfoByUrl([FromBody] FileUrlRequest request)
+        {
+            if (string.IsNullOrEmpty(request.FileUrl))
+            {
+                return BadRequest(new { message = "文件URL不能为空" });
+            }
+
+            var fileInfo = await _fileService.GetFileInfoByUrlAsync(request.FileUrl);
+            
+            if (fileInfo != null)
+            {
+                return Ok(new
+                {
+                    name = fileInfo.Name,
+                    size = fileInfo.Length,
+                    createdAt = fileInfo.CreationTime,
+                    modifiedAt = fileInfo.LastWriteTime,
+                    extension = fileInfo.Extension,
+                    url = request.FileUrl
                 });
             }
 
@@ -282,6 +393,69 @@ namespace CampusTrade.API.Controllers
                 data = results,
                 totalCount = files.Count,
                 successCount = results.Count(r => (bool)r.GetType().GetProperty("success")?.GetValue(r)!)
+            });
+        }
+
+        /// <summary>
+        /// 从URL提取文件名
+        /// </summary>
+        /// <param name="request">包含文件URL的请求</param>
+        /// <returns>文件名</returns>
+        [HttpPost("extract-filename")]
+        [AllowAnonymous]
+        public IActionResult ExtractFileNameFromUrl([FromBody] FileUrlRequest request)
+        {
+            if (string.IsNullOrEmpty(request.FileUrl))
+            {
+                return BadRequest(new { message = "文件URL不能为空" });
+            }
+
+            var fileName = _fileService.ExtractFileNameFromUrl(request.FileUrl);
+            var fileType = _fileService.ExtractFileTypeFromUrl(request.FileUrl);
+
+            return Ok(new
+            {
+                fileName = fileName,
+                fileType = fileType?.ToString(),
+                originalUrl = request.FileUrl
+            });
+        }
+
+        /// <summary>
+        /// 批量检查文件是否存在（通过URL）
+        /// </summary>
+        /// <param name="request">包含文件URL列表的请求</param>
+        /// <returns>批量检查结果</returns>
+        [HttpPost("batch-exists")]
+        [AllowAnonymous]
+        public async Task<IActionResult> BatchCheckFileExistsByUrl([FromBody] BatchFileUrlRequest request)
+        {
+            if (request.FileUrls == null || request.FileUrls.Count == 0)
+            {
+                return BadRequest(new { message = "文件URL列表不能为空" });
+            }
+
+            var results = new List<object>();
+            
+            foreach (var fileUrl in request.FileUrls)
+            {
+                var exists = await _fileService.FileExistsByUrlAsync(fileUrl);
+                var fileName = _fileService.ExtractFileNameFromUrl(fileUrl);
+                
+                results.Add(new
+                {
+                    url = fileUrl,
+                    fileName = fileName,
+                    exists = exists
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                data = results,
+                totalCount = request.FileUrls.Count,
+                existingCount = results.Count(r => (bool)r.GetType().GetProperty("exists")?.GetValue(r)!)
             });
         }
     }

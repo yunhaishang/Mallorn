@@ -24,11 +24,25 @@ namespace CampusTrade.API.Services.File
         Task<FileDownloadResult> DownloadFileAsync(string fileName);
 
         /// <summary>
+        /// 通过URL下载文件
+        /// </summary>
+        /// <param name="fileUrl">文件URL</param>
+        /// <returns>文件流</returns>
+        Task<FileDownloadResult> DownloadFileByUrlAsync(string fileUrl);
+
+        /// <summary>
         /// 删除文件
         /// </summary>
         /// <param name="fileName">文件名</param>
         /// <returns>是否成功</returns>
         Task<bool> DeleteFileAsync(string fileName);
+
+        /// <summary>
+        /// 通过URL删除文件
+        /// </summary>
+        /// <param name="fileUrl">文件URL</param>
+        /// <returns>是否成功</returns>
+        Task<bool> DeleteFileByUrlAsync(string fileUrl);
 
         /// <summary>
         /// 检查文件是否存在
@@ -38,11 +52,39 @@ namespace CampusTrade.API.Services.File
         Task<bool> FileExistsAsync(string fileName);
 
         /// <summary>
+        /// 通过URL检查文件是否存在
+        /// </summary>
+        /// <param name="fileUrl">文件URL</param>
+        /// <returns>是否存在</returns>
+        Task<bool> FileExistsByUrlAsync(string fileUrl);
+
+        /// <summary>
         /// 获取文件信息
         /// </summary>
         /// <param name="fileName">文件名</param>
         /// <returns>文件信息</returns>
         Task<FileInfo?> GetFileInfoAsync(string fileName);
+
+        /// <summary>
+        /// 通过URL获取文件信息
+        /// </summary>
+        /// <param name="fileUrl">文件URL</param>
+        /// <returns>文件信息</returns>
+        Task<FileInfo?> GetFileInfoByUrlAsync(string fileUrl);
+
+        /// <summary>
+        /// 从文件URL提取文件名
+        /// </summary>
+        /// <param name="fileUrl">文件URL</param>
+        /// <returns>文件名</returns>
+        string ExtractFileNameFromUrl(string fileUrl);
+
+        /// <summary>
+        /// 从文件URL提取文件类型
+        /// </summary>
+        /// <param name="fileUrl">文件URL</param>
+        /// <returns>文件类型</returns>
+        FileType? ExtractFileTypeFromUrl(string fileUrl);
 
         /// <summary>
         /// 获取缩略图文件名
