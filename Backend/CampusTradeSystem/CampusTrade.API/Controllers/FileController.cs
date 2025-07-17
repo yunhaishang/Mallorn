@@ -253,6 +253,103 @@ namespace CampusTrade.API.Controllers
         }
 
         /// <summary>
+        /// 批量删除文件
+        /// </summary>
+        /// <param name="fileNames">文件名列表</param>
+        /// <returns>删除结果</returns>
+        [HttpDelete("delete/batch")]
+        public async Task<IActionResult> DeleteFiles([FromBody] List<string> fileNames)
+        {
+            if (fileNames == null || !fileNames.Any())
+            {
+                return BadRequest(new { message = "文件名列表不能为空" });
+            }
+
+            var results = new List<object>();
+            var successCount = 0;
+            
+            foreach (var fileName in fileNames)
+            {
+                try
+                {
+                    var result = await _fileService.DeleteFileAsync(fileName);
+                    results.Add(new { fileName, success = result, error = result ? null : "删除失败" });
+                    if (result) successCount++;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "删除文件失败: {FileName}", fileName);
+                    results.Add(new { fileName, success = false, error = ex.Message });
+                }
+            }
+
+            return Ok(new
+            {
+                success = true,
+                data = results,
+                totalCount = fileNames.Count,
+                successCount = successCount,
+                failedCount = fileNames.Count - successCount
+            });
+        }
+
+        /// <summary>
+        /// 通过URL批量删除文件
+        /// </summary>
+        /// <param name="request">包含文件URL列表的请求</param>
+        /// <returns>删除结果</returns>
+        [HttpDelete("delete/batch-by-url")]
+        public async Task<IActionResult> DeleteFilesByUrl([FromBody] BatchFileUrlRequest request)
+        {
+            if (request.FileUrls == null || !request.FileUrls.Any())
+            {
+                return BadRequest(new { message = "文件URL列表不能为空" });
+            }
+
+            var results = new List<object>();
+            var successCount = 0;
+            
+            foreach (var fileUrl in request.FileUrls)
+            {
+                try
+                {
+                    var fileName = _fileService.ExtractFileNameFromUrl(fileUrl);
+                    var result = await _fileService.DeleteFileByUrlAsync(fileUrl);
+                    
+                    results.Add(new 
+                    { 
+                        fileUrl, 
+                        fileName, 
+                        success = result, 
+                        error = result ? null : "删除失败"
+                    });
+                    
+                    if (result) successCount++;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "通过URL删除文件失败: {FileUrl}", fileUrl);
+                    results.Add(new 
+                    { 
+                        fileUrl, 
+                        fileName = _fileService.ExtractFileNameFromUrl(fileUrl), 
+                        success = false, 
+                        error = ex.Message 
+                    });
+                }
+            }
+
+            return Ok(new
+            {
+                success = true,
+                data = results,
+                totalCount = request.FileUrls.Count,
+                successCount = successCount,
+                failedCount = request.FileUrls.Count - successCount
+            });
+        }
+
+        /// <summary>
         /// 检查文件是否存在
         /// </summary>
         /// <param name="fileName">文件名</param>
