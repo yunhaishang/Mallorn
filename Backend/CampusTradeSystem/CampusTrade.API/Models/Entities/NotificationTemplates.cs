@@ -12,7 +12,6 @@ namespace CampusTrade.API.Models.Entities
     [Table("NOTIFICATION_TEMPLATES")]
     public class NotificationTemplate
     {
-        #region 常量定义
         public static class TemplateTypes
         {
             public const string ProductRelated = "商品相关";
@@ -33,15 +32,12 @@ namespace CampusTrade.API.Models.Entities
         // 内容长度限制
         public const int MaxTemplateNameLength = 100;
         public const int MaxDescriptionLength = 500;
-        #endregion
 
-        #region 基本信息
         /// <summary>
         /// 模板ID
         /// </summary>
         [Key]
-        [Column("TEMPLATE_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("TEMPLATE_ID")]
         public int TemplateId { get; set; }
 
         /// <summary>
@@ -78,7 +74,7 @@ namespace CampusTrade.API.Models.Entities
         /// 优先级（1-5，数字越大优先级越高）
         /// </summary>
         [Required]
-        [Column("PRIORITY", TypeName = "NUMBER")]
+        [Column("PRIORITY")]
         [Range(1, 5, ErrorMessage = "优先级必须在1到5之间")]
         public int Priority { get; set; } = PriorityLevels.Normal;
 
@@ -86,30 +82,28 @@ namespace CampusTrade.API.Models.Entities
         /// 是否启用
         /// </summary>
         [Required]
-        [Column("IS_ACTIVE", TypeName = "NUMBER")]
+        [Column("IS_ACTIVE", TypeName = "NUMBER(1)")]
         public int IsActive { get; set; } = 1;
 
         /// <summary>
         /// 创建时间
         /// </summary>
         [Required]
-        [Column("CREATED_AT", TypeName = "TIMESTAMP")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        [Column("CREATED_AT")]
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// 更新时间
         /// </summary>
-        [Column("UPDATED_AT", TypeName = "TIMESTAMP")]
+        [Column("UPDATED_AT")]
         public DateTime? UpdatedAt { get; set; }
 
         /// <summary>
         /// 创建者ID
         /// </summary>
-        [Column("CREATED_BY", TypeName = "NUMBER")]
+        [Column("CREATED_BY")]
         public int? CreatedBy { get; set; }
-        #endregion
 
-        #region 导航属性
         /// <summary>
         /// 创建者用户
         /// </summary>
@@ -119,9 +113,7 @@ namespace CampusTrade.API.Models.Entities
         /// 使用该模板的通知集合
         /// </summary>
         public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
-        #endregion
 
-        #region 计算属性
         /// <summary>
         /// 是否启用（Boolean形式）
         /// </summary>
@@ -139,9 +131,7 @@ namespace CampusTrade.API.Models.Entities
         /// </summary>
         [NotMapped]
         public bool IsSystemTemplate => !CreatedBy.HasValue;
-        #endregion
 
-        #region 业务方法
         /// <summary>
         /// 设置启用状态
         /// </summary>
@@ -296,9 +286,7 @@ namespace CampusTrade.API.Models.Entities
                 ? TemplateContent
                 : TemplateContent.Substring(0, maxLength) + "...";
         }
-        #endregion
 
-        #region 静态方法
         /// <summary>
         /// 获取所有可用模板类型
         /// </summary>
@@ -382,6 +370,5 @@ namespace CampusTrade.API.Models.Entities
                 CreatedAt = DateTime.Now
             };
         }
-        #endregion
     }
 }

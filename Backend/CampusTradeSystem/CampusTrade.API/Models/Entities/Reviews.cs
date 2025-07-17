@@ -12,7 +12,6 @@ namespace CampusTrade.API.Models.Entities
     [Table("REVIEWS")]
     public class Review
     {
-        #region 常量定义
         // 评分范围
         public const decimal MinRating = 1.0m;
         public const decimal MaxRating = 5.0m;
@@ -32,22 +31,19 @@ namespace CampusTrade.API.Models.Entities
         // 内容长度限制
         public const int MaxContentLength = 1000;
         public const int MaxReplyLength = 500;
-        #endregion
 
-        #region 基本信息
         /// <summary>
-        /// 评价ID
+        /// 评价ID（由Oracle序列和触发器生成）
         /// </summary>
         [Key]
-        [Column("REVIEW_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("REVIEW_ID")]
         public int ReviewId { get; set; }
 
         /// <summary>
         /// 订单ID（外键，关联抽象订单）
         /// </summary>
         [Required]
-        [Column("ORDER_ID", TypeName = "NUMBER")]
+        [Column("ORDER_ID")]
         public int OrderId { get; set; }
 
         /// <summary>
@@ -72,18 +68,18 @@ namespace CampusTrade.API.Models.Entities
         public int? ServiceAttitude { get; set; }
 
         /// <summary>
-        /// 是否匿名评价
+        /// 是否匿名评价（默认值由Oracle处理）
         /// </summary>
         [Required]
-        [Column("IS_ANONYMOUS", TypeName = "NUMBER")]
-        public int IsAnonymous { get; set; } = 0;
+        [Column("IS_ANONYMOUS", TypeName = "NUMBER(1)")]
+        public int IsAnonymous { get; set; }
 
         /// <summary>
-        /// 评价创建时间
+        /// 评价创建时间（由Oracle DEFAULT处理）
         /// </summary>
         [Required]
-        [Column("CREATE_TIME", TypeName = "TIMESTAMP")]
-        public DateTime CreateTime { get; set; } = DateTime.Now;
+        [Column("CREATE_TIME")]
+        public DateTime CreateTime { get; set; }
 
         /// <summary>
         /// 卖家回复
@@ -98,16 +94,12 @@ namespace CampusTrade.API.Models.Entities
         [Column("CONTENT", TypeName = "CLOB")]
         [MaxLength(MaxContentLength)]
         public string? Content { get; set; }
-        #endregion
 
-        #region 导航属性
         /// <summary>
         /// 关联的抽象订单
         /// </summary>
         public virtual AbstractOrder AbstractOrder { get; set; } = null!;
-        #endregion
 
-        #region 计算属性
         /// <summary>
         /// 是否为匿名评价（Boolean形式）
         /// </summary>
@@ -150,9 +142,7 @@ namespace CampusTrade.API.Models.Entities
                 return (Rating!.Value + DescAccuracy!.Value + ServiceAttitude!.Value) / 3.0m;
             }
         }
-        #endregion
 
-        #region 业务方法
         /// <summary>
         /// 设置匿名状态
         /// </summary>
@@ -304,9 +294,7 @@ namespace CampusTrade.API.Models.Entities
 
             return (int)((double)score / maxScore * 100);
         }
-        #endregion
 
-        #region 静态方法
         /// <summary>
         /// 验证评分范围是否有效
         /// </summary>
@@ -394,6 +382,5 @@ namespace CampusTrade.API.Models.Entities
             var validRatings = reviews.Where(r => r.Rating.HasValue).Select(r => r.Rating.Value).ToList();
             return validRatings.Count == 0 ? 0 : validRatings.Average();
         }
-        #endregion
     }
 }

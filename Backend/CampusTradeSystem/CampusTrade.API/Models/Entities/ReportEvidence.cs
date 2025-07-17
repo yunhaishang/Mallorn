@@ -9,14 +9,11 @@ namespace CampusTrade.API.Models.Entities
     [Table("REPORT_EVIDENCE")]
     public class ReportEvidence
     {
-        #region 基本信息
-
         /// <summary>
-        /// 证据ID - 主键，自增
+        /// 证据ID - 主键，由序列和触发器自增
         /// </summary>
         [Key]
         [Column("EVIDENCE_ID")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int EvidenceId { get; set; }
 
         /// <summary>
@@ -30,7 +27,7 @@ namespace CampusTrade.API.Models.Entities
         /// 文件类型 - 图片/视频/文档
         /// </summary>
         [Required]
-        [Column("FILE_TYPE")]
+        [Column("FILE_TYPE", TypeName = "VARCHAR2(20)")]
         [StringLength(20)]
         public string FileType { get; set; } = string.Empty;
 
@@ -38,28 +35,20 @@ namespace CampusTrade.API.Models.Entities
         /// 文件URL - 证据文件的访问地址
         /// </summary>
         [Required]
-        [Column("FILE_URL")]
+        [Column("FILE_URL", TypeName = "VARCHAR2(200)")]
         [StringLength(200)]
         public string FileUrl { get; set; } = string.Empty;
 
         /// <summary>
-        /// 上传时间
+        /// 上传时间（由Oracle DEFAULT处理）
         /// </summary>
         [Column("UPLOADED_AT")]
-        public DateTime UploadedAt { get; set; } = DateTime.Now;
-
-        #endregion
-
-        #region 导航属性
+        public DateTime UploadedAt { get; set; }
 
         /// <summary>
         /// 关联的举报信息
         /// </summary>
         public virtual Reports Report { get; set; } = null!;
-
-        #endregion
-
-        #region 业务方法
 
         /// <summary>
         /// 验证文件类型是否有效
@@ -246,7 +235,5 @@ namespace CampusTrade.API.Models.Entities
             var timeDesc = IsRecentlyUploaded() ? "最近上传" : $"{GetUploadedHours():F1}小时前上传";
             return $"{FileType}证据 - {timeDesc}";
         }
-
-        #endregion
     }
 }

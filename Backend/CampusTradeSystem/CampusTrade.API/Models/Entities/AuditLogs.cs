@@ -11,29 +11,25 @@ namespace CampusTrade.API.Models.Entities
     [Table("AUDIT_LOGS")]
     public class AuditLog
     {
-        #region 常量定义
         public static class ActionTypes
         {
             public const string BanUser = "封禁用户";
             public const string ModifyPermission = "修改权限";
             public const string HandleReport = "处理举报";
         }
-        #endregion
 
-        #region 基本信息
         /// <summary>
         /// 日志ID
         /// </summary>
         [Key]
-        [Column("LOG_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("LOG_ID")]
         public int LogId { get; set; }
 
         /// <summary>
         /// 管理员ID（外键）
         /// </summary>
         [Required]
-        [Column("ADMIN_ID", TypeName = "NUMBER")]
+        [Column("ADMIN_ID")]
         public int AdminId { get; set; }
 
         /// <summary>
@@ -47,7 +43,7 @@ namespace CampusTrade.API.Models.Entities
         /// <summary>
         /// 目标ID（如用户ID、举报ID等）
         /// </summary>
-        [Column("TARGET_ID", TypeName = "NUMBER")]
+        [Column("TARGET_ID")]
         public int? TargetId { get; set; }
 
         /// <summary>
@@ -60,18 +56,14 @@ namespace CampusTrade.API.Models.Entities
         /// 操作时间
         /// </summary>
         [Required]
-        [Column("LOG_TIME", TypeName = "TIMESTAMP")]
-        public DateTime LogTime { get; set; } = DateTime.Now;
-        #endregion
+        [Column("LOG_TIME")]
+        public DateTime LogTime { get; set; }
 
-        #region 导航属性
         /// <summary>
         /// 执行操作的管理员
         /// </summary>
         public virtual Admin Admin { get; set; } = null!;
-        #endregion
 
-        #region 业务方法
         /// <summary>
         /// 是否为用户封禁操作
         /// </summary>
@@ -152,9 +144,7 @@ namespace CampusTrade.API.Models.Entities
                 return $"{(int)timeDiff.TotalDays}天前";
             return LogTime.ToString("yyyy-MM-dd");
         }
-        #endregion
 
-        #region 静态方法
         /// <summary>
         /// 获取所有可用操作类型
         /// </summary>
@@ -230,6 +220,5 @@ namespace CampusTrade.API.Models.Entities
                 LogTime = DateTime.Now
             };
         }
-        #endregion
     }
 }

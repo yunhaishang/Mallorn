@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Services.Auth;
@@ -93,9 +94,9 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(true);
     }
 
-    #region LoginWithTokenAsync Tests
+    LoginWithTokenAsync Tests
 
-    [Fact]
+  [Fact]
     public async Task LoginWithTokenAsync_WithValidCredentials_ShouldReturnTokenResponse()
     {
         // Arrange
@@ -106,7 +107,25 @@ public class AuthServiceTests : IDisposable
             DeviceId = "test_device"
         };
 
-        var expectedTokenResponse = JwtTestHelper.CreateTestTokenResponse(TestDbContextFactory.GetTestUser(1));
+        var testUser = TestDbContextFactory.GetTestUser(1);
+        var expectedTokenResponse = JwtTestHelper.CreateTestTokenResponse(testUser);
+
+        // Mock GetUserByUsernameAsync
+        _mockUserRepository.Setup(r => r.GetByEmailAsync("zhangsan@test.com"))
+            .ReturnsAsync(testUser);
+        _mockUserRepository.Setup(r => r.GetUserWithStudentAsync(1))
+            .ReturnsAsync(testUser);
+
+        // Mock user repository methods for login process
+        _mockUserRepository.Setup(r => r.IsUserLockedAsync(1))
+            .ReturnsAsync(false);
+        _mockUserRepository.Setup(r => r.ResetFailedLoginAttemptsAsync(1))
+            .Returns(Task.CompletedTask);
+        _mockUserRepository.Setup(r => r.UnlockUserAsync(1))
+            .Returns(Task.CompletedTask);
+        _mockUserRepository.Setup(r => r.UpdateLastLoginAsync(1, It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
         _mockTokenService.Setup(x => x.GenerateTokenResponseAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null))
                         .ReturnsAsync(expectedTokenResponse);
 
@@ -132,7 +151,25 @@ public class AuthServiceTests : IDisposable
             DeviceId = "test_device"
         };
 
-        var expectedTokenResponse = JwtTestHelper.CreateTestTokenResponse(TestDbContextFactory.GetTestUser(1));
+        var testUser = TestDbContextFactory.GetTestUser(1);
+        var expectedTokenResponse = JwtTestHelper.CreateTestTokenResponse(testUser);
+
+        // Mock GetUserByUsernameAsync
+        _mockUserRepository.Setup(r => r.GetByEmailAsync("zhangsan@test.com"))
+            .ReturnsAsync(testUser);
+        _mockUserRepository.Setup(r => r.GetUserWithStudentAsync(1))
+            .ReturnsAsync(testUser);
+
+        // Mock user repository methods for login process
+        _mockUserRepository.Setup(r => r.IsUserLockedAsync(1))
+            .ReturnsAsync(false);
+        _mockUserRepository.Setup(r => r.ResetFailedLoginAttemptsAsync(1))
+            .Returns(Task.CompletedTask);
+        _mockUserRepository.Setup(r => r.UnlockUserAsync(1))
+            .Returns(Task.CompletedTask);
+        _mockUserRepository.Setup(r => r.UpdateLastLoginAsync(1, It.IsAny<string>()))
+            .Returns(Task.CompletedTask);
+
         _mockTokenService.Setup(x => x.GenerateTokenResponseAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null))
                         .ReturnsAsync(expectedTokenResponse);
 
@@ -200,11 +237,11 @@ public class AuthServiceTests : IDisposable
         result.Should().BeNull();
     }
 
-    #endregion
+#endregion
 
-    #region RegisterAsync Tests
+    RegisterAsync Tests
 
-    [Fact]
+  [Fact]
     public async Task RegisterAsync_WithValidData_ShouldReturnUser()
     {
         // Arrange
@@ -330,16 +367,20 @@ public class AuthServiceTests : IDisposable
         exception.Message.Should().Contain("学生身份验证失败");
     }
 
-    #endregion
+#endregion
 
-    #region GetUserByUsernameAsync Tests
+    GetUserByUsernameAsync Tests
 
-    [Fact]
+  [Fact]
     public async Task GetUserByUsernameAsync_WithValidUsername_ShouldReturnUser()
     {
         // Arrange
         var testUser = TestDbContextFactory.GetTestUser(1);
-        _mockUserRepository.Setup(r => r.GetByStudentIdAsync("zhangsan"))
+        _mockUserRepository.Setup(r => r.GetByEmailAsync("zhangsan"))
+            .ReturnsAsync((User?)null); // 邮箱查找失败
+        _mockUserRepository.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>()))
+            .ReturnsAsync(testUser); // 用户名查找成功
+        _mockUserRepository.Setup(r => r.GetUserWithStudentAsync(1))
             .ReturnsAsync(testUser);
 
         // Act
@@ -354,6 +395,13 @@ public class AuthServiceTests : IDisposable
     [Fact]
     public async Task GetUserByUsernameAsync_WithValidEmail_ShouldReturnUser()
     {
+        // Arrange
+        var testUser = TestDbContextFactory.GetTestUser(1);
+        _mockUserRepository.Setup(r => r.GetByEmailAsync("zhangsan@test.com"))
+            .ReturnsAsync(testUser);
+        _mockUserRepository.Setup(r => r.GetUserWithStudentAsync(1))
+            .ReturnsAsync(testUser);
+
         // Act
         var result = await _authService.GetUserByUsernameAsync("zhangsan@test.com");
 
@@ -383,11 +431,11 @@ public class AuthServiceTests : IDisposable
         result.Should().BeNull();
     }
 
-    #endregion
+#endregion
 
-    #region ValidateStudentAsync Tests
+    ValidateStudentAsync Tests
 
-    [Fact]
+  [Fact]
     public async Task ValidateStudentAsync_WithValidStudent_ShouldReturnTrue()
     {
         // Act
@@ -437,13 +485,13 @@ public class AuthServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
-    #endregion
+#endregion
 
 
 
-    #region LogoutAsync Tests
+    LogoutAsync Tests
 
-    [Fact]
+  [Fact]
     public async Task LogoutAsync_WithValidToken_ShouldReturnTrue()
     {
         // Arrange
@@ -474,11 +522,11 @@ public class AuthServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
-    #endregion
+#endregion
 
-    #region LogoutAllDevicesAsync Tests
+    LogoutAllDevicesAsync Tests
 
-    [Fact]
+  [Fact]
     public async Task LogoutAllDevicesAsync_WithValidUserId_ShouldReturnTrue()
     {
         // Arrange
@@ -509,11 +557,11 @@ public class AuthServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
-    #endregion
+#endregion
 
-    #region RefreshTokenAsync Tests
+    RefreshTokenAsync Tests
 
-    [Fact]
+  [Fact]
     public async Task RefreshTokenAsync_WithValidRequest_ShouldReturnTokenResponse()
     {
         // Arrange
@@ -555,7 +603,7 @@ public class AuthServiceTests : IDisposable
         exception.Message.Should().Contain("无效的刷新令牌");
     }
 
-    #endregion
+#endregion
 
     public void Dispose()
     {

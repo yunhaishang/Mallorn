@@ -40,9 +40,9 @@ public class AuthControllerTests : IDisposable
         };
     }
 
-    #region Login Tests
+    Login Tests
 
-    [Fact]
+  [Fact]
     public async Task Login_WithValidCredentials_ShouldReturnSuccessResponse()
     {
         // Arrange
@@ -152,11 +152,11 @@ public class AuthControllerTests : IDisposable
         apiResponse.ErrorCode.Should().Be("INTERNAL_ERROR");
     }
 
-    #endregion
+#endregion
 
-    #region Register Tests
+    Register Tests
 
-    [Fact]
+  [Fact]
     public async Task Register_WithValidData_ShouldReturnSuccessResponse()
     {
         // Arrange
@@ -253,11 +253,11 @@ public class AuthControllerTests : IDisposable
         apiResponse.ErrorCode.Should().Be("VALIDATION_ERROR");
     }
 
-    #endregion
+#endregion
 
-    #region GetUser Tests
+    GetUser Tests
 
-    [Fact]
+  [Fact]
     public async Task GetUser_WithValidUsername_ShouldReturnUserInfo()
     {
         // Arrange
@@ -302,11 +302,11 @@ public class AuthControllerTests : IDisposable
         apiResponse.Message.Should().Contain("用户不存在");
     }
 
-    #endregion
+#endregion
 
-    #region ValidateStudent Tests
+    ValidateStudent Tests
 
-    [Fact]
+  [Fact]
     public async Task ValidateStudent_WithValidStudentInfo_ShouldReturnSuccess()
     {
         // Arrange
@@ -358,11 +358,11 @@ public class AuthControllerTests : IDisposable
         apiResponse.Message.Should().Contain("学生身份验证失败");
     }
 
-    #endregion
+#endregion
 
-    #region Logout Tests
+    Logout Tests
 
-    [Fact]
+  [Fact]
     public async Task Logout_WithValidToken_ShouldReturnSuccess()
     {
         // Arrange
@@ -412,11 +412,11 @@ public class AuthControllerTests : IDisposable
         apiResponse.Message.Should().Contain("退出登录失败");
     }
 
-    #endregion
+#endregion
 
-    #region LogoutAll Tests
+    LogoutAll Tests
 
-    [Fact]
+  [Fact]
     public async Task LogoutAll_WithValidUserId_ShouldReturnSuccess()
     {
         // Arrange
@@ -469,7 +469,7 @@ public class AuthControllerTests : IDisposable
         apiResponse.Message.Should().Contain("无效的用户身份");
     }
 
-    #endregion
+#endregion
 
     public void Dispose()
     {

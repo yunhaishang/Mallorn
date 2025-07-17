@@ -12,7 +12,7 @@ namespace CampusTrade.API.Models.Entities
         /// 换物请求ID - 主键，外键
         /// </summary>
         [Key]
-        [Column("EXCHANGE_ID", TypeName = "NUMBER")]
+        [Column("EXCHANGE_ID")]
         public int ExchangeId { get; set; }
 
         /// <summary>
@@ -41,16 +41,14 @@ namespace CampusTrade.API.Models.Entities
         [Required]
         [Column("STATUS", TypeName = "VARCHAR2(20)")]
         [MaxLength(20)]
-        public string Status { get; set; } = "等待回应";
+        public string Status { get; set; } = string.Empty;
 
         /// <summary>
         /// 创建时间
         /// </summary>
         [Required]
-        [Column("CREATED_AT", TypeName = "TIMESTAMP")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        #region 导航属性
+        [Column("CREATED_AT")]
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// 关联的抽象订单
@@ -69,10 +67,6 @@ namespace CampusTrade.API.Models.Entities
         /// 外键关系：exchange_requests.request_product_id -> products.product_id
         /// </summary>
         public virtual Product RequestProduct { get; set; } = null!;
-
-        #endregion
-
-        #region 业务方法
 
         /// <summary>
         /// 检查换物请求是否处于等待回应状态
@@ -325,10 +319,6 @@ namespace CampusTrade.API.Models.Entities
             return differenceRate <= maxDifferenceRate;
         }
 
-        #endregion
-
-        #region 静态方法
-
         /// <summary>
         /// 创建新的换物请求
         /// </summary>
@@ -429,10 +419,6 @@ namespace CampusTrade.API.Models.Entities
             return true;
         }
 
-        #endregion
-
-        #region 常量定义
-
         /// <summary>
         /// 有效的换物状态列表
         /// </summary>
@@ -460,7 +446,5 @@ namespace CampusTrade.API.Models.Entities
         /// 交换条件最大长度
         /// </summary>
         public const int MaxTermsLength = 4000;
-
-        #endregion
     }
 }

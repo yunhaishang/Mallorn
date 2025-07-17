@@ -12,7 +12,6 @@ namespace CampusTrade.API.Models.Entities
     [Table("NOTIFICATIONS")]
     public class Notification
     {
-        #region 常量定义
         public static class SendStatuses
         {
             public const string Pending = "待发送";
@@ -23,35 +22,32 @@ namespace CampusTrade.API.Models.Entities
         // 重试次数限制
         public const int MaxRetryCount = 5;
         public const int DefaultRetryIntervalMinutes = 5;
-        #endregion
 
-        #region 基本信息
         /// <summary>
         /// 通知ID
         /// </summary>
         [Key]
-        [Column("NOTIFICATION_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("NOTIFICATION_ID")]
         public int NotificationId { get; set; }
 
         /// <summary>
         /// 模板ID（外键）
         /// </summary>
         [Required]
-        [Column("TEMPLATE_ID", TypeName = "NUMBER")]
+        [Column("TEMPLATE_ID")]
         public int TemplateId { get; set; }
 
         /// <summary>
         /// 接收者用户ID（外键）
         /// </summary>
         [Required]
-        [Column("RECIPIENT_ID", TypeName = "NUMBER")]
+        [Column("RECIPIENT_ID")]
         public int RecipientId { get; set; }
 
         /// <summary>
         /// 订单ID（外键，可选，仅订单相关通知需要）
         /// </summary>
-        [Column("ORDER_ID", TypeName = "NUMBER")]
+        [Column("ORDER_ID")]
         public int? OrderId { get; set; }
 
         /// <summary>
@@ -66,37 +62,35 @@ namespace CampusTrade.API.Models.Entities
         [Required]
         [Column("SEND_STATUS", TypeName = "VARCHAR2(20)")]
         [MaxLength(20)]
-        public string SendStatus { get; set; } = SendStatuses.Pending;
+        public string SendStatus { get; set; } = string.Empty;
 
         /// <summary>
         /// 重试次数
         /// </summary>
         [Required]
-        [Column("RETRY_COUNT", TypeName = "NUMBER")]
-        public int RetryCount { get; set; } = 0;
+        [Column("RETRY_COUNT")]
+        public int RetryCount { get; set; }
 
         /// <summary>
         /// 最后尝试发送时间
         /// </summary>
         [Required]
-        [Column("LAST_ATTEMPT_TIME", TypeName = "TIMESTAMP")]
-        public DateTime LastAttemptTime { get; set; } = DateTime.Now;
+        [Column("LAST_ATTEMPT_TIME")]
+        public DateTime LastAttemptTime { get; set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
         [Required]
-        [Column("CREATED_AT", TypeName = "TIMESTAMP")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        [Column("CREATED_AT")]
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// 发送成功时间
         /// </summary>
-        [Column("SENT_AT", TypeName = "TIMESTAMP")]
+        [Column("SENT_AT")]
         public DateTime? SentAt { get; set; }
-        #endregion
 
-        #region 导航属性
         /// <summary>
         /// 关联的通知模板
         /// </summary>
@@ -111,9 +105,7 @@ namespace CampusTrade.API.Models.Entities
         /// 关联的抽象订单（可选）
         /// </summary>
         public virtual AbstractOrder? AbstractOrder { get; set; }
-        #endregion
 
-        #region 计算属性
         /// <summary>
         /// 是否为订单相关通知
         /// </summary>
@@ -131,9 +123,7 @@ namespace CampusTrade.API.Models.Entities
         /// </summary>
         [NotMapped]
         public TimeSpan? SendDuration => IsSent ? SentAt - CreatedAt : null;
-        #endregion
 
-        #region 业务方法
         /// <summary>
         /// 是否为待发送状态
         /// </summary>
@@ -323,9 +313,7 @@ namespace CampusTrade.API.Models.Entities
         {
             return Template?.TemplateType ?? "未知类型";
         }
-        #endregion
 
-        #region 静态方法
         /// <summary>
         /// 获取所有可用发送状态
         /// </summary>
@@ -448,6 +436,5 @@ namespace CampusTrade.API.Models.Entities
 
             return notifications;
         }
-        #endregion
     }
 }

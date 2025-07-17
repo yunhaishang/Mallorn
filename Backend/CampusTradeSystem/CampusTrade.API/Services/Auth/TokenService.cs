@@ -214,11 +214,11 @@ public class TokenService : ITokenService
     {
         try
         {
-            var token = await _unitOfWork.RefreshTokens.GetWithIncludeAsync(
+            var tokens = await _unitOfWork.RefreshTokens.GetWithIncludeAsync(
                 filter: rt => rt.Token == refreshToken,
                 includeProperties: rt => rt.User);
 
-            var refreshTokenEntity = token.FirstOrDefault();
+            var refreshTokenEntity = tokens.FirstOrDefault();
             if (refreshTokenEntity == null)
             {
                 _logger.LogWarning("刷新令牌不存在: {Token}", SecurityHelper.ObfuscateSensitive(refreshToken));
@@ -369,7 +369,7 @@ public class TokenService : ITokenService
     {
         try
         {
-            var deletedCount = await _unitOfWork.RefreshTokens.BulkDeleteAsync(rt => rt.ExpiryDate <= DateTime.UtcNow);
+            var deletedCount = await _unitOfWork.RefreshTokens.CleanupExpiredTokensAsync();
             await _unitOfWork.SaveChangesAsync();
 
             _logger.LogInformation("清理过期刷新令牌成功，数量: {Count}", deletedCount);

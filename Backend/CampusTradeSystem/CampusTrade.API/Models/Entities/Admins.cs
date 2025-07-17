@@ -11,29 +11,25 @@ namespace CampusTrade.API.Models.Entities
     [Table("ADMINS")]
     public class Admin
     {
-        #region 常量定义
         public static class Roles
         {
             public const string Super = "super";
             public const string CategoryAdmin = "category_admin";
             public const string ReportAdmin = "report_admin";
         }
-        #endregion
 
-        #region 基本信息
         /// <summary>
         /// 管理员ID
         /// </summary>
         [Key]
-        [Column("ADMIN_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("ADMIN_ID")]
         public int AdminId { get; set; }
 
         /// <summary>
         /// 用户ID（外键）
         /// </summary>
         [Required]
-        [Column("USER_ID", TypeName = "NUMBER")]
+        [Column("USER_ID")]
         public int UserId { get; set; }
 
         /// <summary>
@@ -47,18 +43,16 @@ namespace CampusTrade.API.Models.Entities
         /// <summary>
         /// 分配的分类ID（仅category_admin需要）
         /// </summary>
-        [Column("ASSIGNED_CATEGORY", TypeName = "NUMBER")]
+        [Column("ASSIGNED_CATEGORY")]
         public int? AssignedCategory { get; set; }
 
         /// <summary>
         /// 创建时间
         /// </summary>
         [Required]
-        [Column("CREATED_AT", TypeName = "TIMESTAMP")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-        #endregion
+        [Column("CREATED_AT")]
+        public DateTime CreatedAt { get; set; }
 
-        #region 导航属性
         /// <summary>
         /// 关联的用户
         /// </summary>
@@ -73,9 +67,7 @@ namespace CampusTrade.API.Models.Entities
         /// 管理员操作的审计日志
         /// </summary>
         public virtual ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
-        #endregion
 
-        #region 业务方法
         /// <summary>
         /// 是否为超级管理员
         /// </summary>
@@ -164,9 +156,7 @@ namespace CampusTrade.API.Models.Entities
                 _ => "无权限描述"
             };
         }
-        #endregion
 
-        #region 静态方法
         /// <summary>
         /// 获取所有可用角色
         /// </summary>
@@ -224,6 +214,5 @@ namespace CampusTrade.API.Models.Entities
                 CreatedAt = DateTime.Now
             };
         }
-        #endregion
     }
 }

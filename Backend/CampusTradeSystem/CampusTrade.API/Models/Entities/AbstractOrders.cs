@@ -16,7 +16,7 @@ namespace CampusTrade.API.Models.Entities
         /// 由ORDER_SEQ序列生成
         /// </summary>
         [Key]
-        [Column("ABSTRACT_ORDER_ID", TypeName = "NUMBER")]
+        [Column("ABSTRACT_ORDER_ID")]
         public int AbstractOrderId { get; set; }
 
         /// <summary>
@@ -27,8 +27,6 @@ namespace CampusTrade.API.Models.Entities
         [Column("ORDER_TYPE", TypeName = "VARCHAR2(20)")]
         [StringLength(20)]
         public string OrderType { get; set; } = OrderTypes.Normal;
-
-        #region 导航属性
 
         /// <summary>
         /// 对应的普通订单 - 一对一关系
@@ -60,10 +58,6 @@ namespace CampusTrade.API.Models.Entities
         /// </summary>
         public virtual ICollection<Reports> Reports { get; set; } = new List<Reports>();
 
-        #endregion
-
-        #region 静态常量
-
         /// <summary>
         /// 订单类型的有效值 - 与Oracle检查约束保持一致
         /// </summary>
@@ -79,10 +73,6 @@ namespace CampusTrade.API.Models.Entities
             /// </summary>
             public const string Exchange = "exchange";
         }
-
-        #endregion
-
-        #region 业务方法
 
         /// <summary>
         /// 检查订单类型是否有效
@@ -133,8 +123,6 @@ namespace CampusTrade.API.Models.Entities
 
             OrderType = newOrderType;
         }
-
-        #endregion
 
         /// <summary>
         /// 重写ToString方法，返回订单信息

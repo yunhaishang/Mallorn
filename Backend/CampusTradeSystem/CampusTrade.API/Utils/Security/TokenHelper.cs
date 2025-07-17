@@ -190,9 +190,9 @@ public static class TokenHelper
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, userId.ToString()),
-            new(ClaimTypes.Name, username),
-            new(ClaimTypes.Email, email),
-            new("student_id", studentId),
+            new(ClaimTypes.Name, username ?? email), // 如果用户名为空，使用邮箱作为用户名
+            new(ClaimTypes.Email, email ?? string.Empty),
+            new("student_id", studentId ?? string.Empty),
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new(JwtRegisteredClaimNames.Jti, SecurityHelper.GenerateJwtId()),
             new(JwtRegisteredClaimNames.Iat, DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64)

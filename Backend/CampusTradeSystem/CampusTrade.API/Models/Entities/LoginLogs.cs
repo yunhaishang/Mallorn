@@ -11,18 +11,17 @@ namespace CampusTrade.API.Models.Entities
     public class LoginLogs
     {
         /// <summary>
-        /// 日志ID - 主键，对应Oracle中的log_id字段，自增
+        /// 日志ID - 主键，对应Oracle中的log_id字段，Oracle自增
         /// </summary>
         [Key]
-        [Column("LOG_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("LOG_ID")]
         public int LogId { get; set; }
 
         /// <summary>
         /// 用户ID - 外键，对应Oracle中的user_id字段
         /// </summary>
         [Required]
-        [Column("USER_ID", TypeName = "NUMBER")]
+        [Column("USER_ID")]
         public int UserId { get; set; }
 
         /// <summary>
@@ -36,8 +35,8 @@ namespace CampusTrade.API.Models.Entities
         /// <summary>
         /// 登录时间 - 对应Oracle中的log_time字段，默认为当前时间
         /// </summary>
-        [Column("LOG_TIME", TypeName = "TIMESTAMP")]
-        public DateTime LogTime { get; set; } = DateTime.Now;
+        [Column("LOG_TIME")]
+        public DateTime LogTime { get; set; }
 
         /// <summary>
         /// 设备类型 - 对应Oracle中的device_type字段
@@ -52,7 +51,7 @@ namespace CampusTrade.API.Models.Entities
         /// 风险等级 - 对应Oracle中的risk_level字段
         /// 0=低风险，1=中风险，2=高风险
         /// </summary>
-        [Column("RISK_LEVEL", TypeName = "NUMBER")]
+        [Column("RISK_LEVEL")]
         [Range(0, 2, ErrorMessage = "风险等级必须在0-2之间")]
         public int? RiskLevel { get; set; }
 
@@ -150,6 +149,24 @@ namespace CampusTrade.API.Models.Entities
                 return DeviceTypes.Tablet;
 
             return DeviceTypes.PC;
+        }
+
+        /// <summary>
+        /// 检查是否属于高风险
+        /// </summary>
+        /// <returns>是否高风险</returns>
+        public static bool IsHighRisk(int? riskLevel)
+        {
+            return riskLevel == RiskLevels.High;
+        }
+
+        /// <summary>
+        /// 检查当前实例是否属于高风险
+        /// </summary>
+        /// <returns>是否高风险</returns>
+        public bool IsHighRisk()
+        {
+            return IsHighRisk(RiskLevel);
         }
     }
 }

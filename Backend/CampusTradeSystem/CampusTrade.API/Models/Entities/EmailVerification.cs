@@ -14,15 +14,14 @@ namespace CampusTrade.API.Models.Entities
         /// 验证ID - 主键，对应Oracle中的verification_id字段，自增
         /// </summary>
         [Key]
-        [Column("VERIFICATION_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("VERIFICATION_ID")]
         public int VerificationId { get; set; }
 
         /// <summary>
         /// 用户ID - 外键，对应Oracle中的user_id字段
         /// </summary>
         [Required]
-        [Column("USER_ID", TypeName = "NUMBER")]
+        [Column("USER_ID")]
         public int UserId { get; set; }
 
         /// <summary>
@@ -58,22 +57,22 @@ namespace CampusTrade.API.Models.Entities
         /// 过期时间 - 对应Oracle中的expire_time字段
         /// 验证码或令牌的过期时间
         /// </summary>
-        [Column("EXPIRE_TIME", TypeName = "TIMESTAMP")]
+        [Column("EXPIRE_TIME")]
         public DateTime? ExpireTime { get; set; }
 
         /// <summary>
         /// 使用状态 - 对应Oracle中的is_used字段
         /// 0=未使用，1=已使用，默认值0
         /// </summary>
-        [Column("IS_USED", TypeName = "NUMBER")]
+        [Column("IS_USED", TypeName = "NUMBER(1)")]
         [Range(0, 1, ErrorMessage = "使用状态必须是0或1")]
         public int IsUsed { get; set; } = 0;
 
         /// <summary>
         /// 创建时间 - 对应Oracle中的created_at字段，默认为当前时间
         /// </summary>
-        [Column("CREATED_AT", TypeName = "TIMESTAMP")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        [Column("CREATED_AT")]
+        public DateTime CreatedAt { get; set; }
 
         // 导航属性：关联的用户
         [ForeignKey("UserId")]

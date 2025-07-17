@@ -12,15 +12,14 @@ namespace CampusTrade.API.Models.Entities
         /// 议价ID - 主键，自增
         /// </summary>
         [Key]
-        [Column("NEGOTIATION_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("NEGOTIATION_ID")]
         public int NegotiationId { get; set; }
 
         /// <summary>
         /// 订单ID - 外键
         /// </summary>
         [Required]
-        [Column("ORDER_ID", TypeName = "NUMBER")]
+        [Column("ORDER_ID")]
         public int OrderId { get; set; }
 
         /// <summary>
@@ -37,26 +36,20 @@ namespace CampusTrade.API.Models.Entities
         [Required]
         [Column("STATUS", TypeName = "VARCHAR2(20)")]
         [MaxLength(20)]
-        public string Status { get; set; } = "等待回应";
+        public string Status { get; set; } = string.Empty;
 
         /// <summary>
         /// 创建时间
         /// </summary>
         [Required]
-        [Column("CREATED_AT", TypeName = "TIMESTAMP")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        #region 导航属性
+        [Column("CREATED_AT")]
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// 关联的订单
         /// 外键关系：negotiations.order_id -> orders.order_id
         /// </summary>
         public virtual Order Order { get; set; } = null!;
-
-        #endregion
-
-        #region 业务方法
 
         /// <summary>
         /// 检查议价是否处于等待回应状态
@@ -254,10 +247,6 @@ namespace CampusTrade.API.Models.Entities
             return $"议价{GetFormattedPrice()}，状态：{statusText}，创建时间：{CreatedAt:yyyy-MM-dd HH:mm:ss}";
         }
 
-        #endregion
-
-        #region 静态方法
-
         /// <summary>
         /// 创建新的议价请求
         /// </summary>
@@ -322,10 +311,6 @@ namespace CampusTrade.API.Models.Entities
             return rate >= maxDiscountRate && rate <= maxMarkupRate;
         }
 
-        #endregion
-
-        #region 常量定义
-
         /// <summary>
         /// 有效的议价状态列表
         /// </summary>
@@ -353,7 +338,5 @@ namespace CampusTrade.API.Models.Entities
         /// 最大涨价率（1.5倍）
         /// </summary>
         public const decimal MaxMarkupRate = 1.5m;
-
-        #endregion
     }
 }

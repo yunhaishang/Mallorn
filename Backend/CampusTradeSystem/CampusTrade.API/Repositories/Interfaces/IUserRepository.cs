@@ -1,0 +1,90 @@
+using CampusTrade.API.Models.Entities;
+using System.Linq.Expressions;
+
+namespace CampusTrade.API.Repositories.Interfaces
+{
+    /// <summary>
+    /// User实体的Repository接口
+    /// 继承基础IRepository，提供User特有的查询和操作方法
+    /// </summary>
+    public interface IUserRepository : IRepository<User>
+    {
+        #region 查询操作
+        // 用户认证相关
+        Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByStudentIdAsync(string studentId);
+        Task<User?> ValidateUserAsync(string email, string passwordHash);
+        Task<bool> IsEmailExistsAsync(string email);
+        Task<bool> IsStudentIdExistsAsync(string studentId);
+
+        // 用户状态管理
+        Task<User?> GetActiveUserByIdAsync(int userId);
+        Task<IEnumerable<User>> GetActiveUsersAsync();
+        Task<User?> GetUserWithDetailsAsync(int userId);
+        Task SetUserActiveStatusAsync(int userId, bool isActive);
+        Task UpdateLastLoginAsync(int userId, string ipAddress);
+
+        // 安全相关
+        Task<User?> GetUserBySecurityStampAsync(string securityStamp);
+        Task UpdateSecurityStampAsync(int userId, string newSecurityStamp);
+        Task<bool> IsUserLockedAsync(int userId);
+        Task LockUserAsync(int userId, DateTime? lockoutEnd = null);
+        Task UnlockUserAsync(int userId);
+        Task IncrementFailedLoginAttemptsAsync(int userId);
+        Task ResetFailedLoginAttemptsAsync(int userId);
+
+        // 密码相关
+        Task UpdatePasswordAsync(int userId, string newPasswordHash);
+        Task<DateTime?> GetPasswordChangedAtAsync(int userId);
+        Task UpdatePasswordChangedAtAsync(int userId, DateTime changedAt);
+
+        // 邮箱验证
+        Task<bool> IsEmailVerifiedAsync(int userId);
+        Task SetEmailVerifiedAsync(int userId, bool isVerified);
+        Task UpdateEmailVerificationTokenAsync(int userId, string? token);
+
+        // 双因子认证
+        Task<bool> IsTwoFactorEnabledAsync(int userId);
+        Task SetTwoFactorEnabledAsync(int userId, bool enabled);
+
+        // 用户统计和查询
+        Task<int> GetUserCountAsync();
+        Task<int> GetActiveUserCountAsync();
+        Task<IEnumerable<User>> GetUsersByDepartmentAsync(string department);
+        Task<IEnumerable<User>> GetUsersByCreditRangeAsync(decimal minCredit, decimal maxCredit);
+        Task<IEnumerable<User>> GetRecentRegisteredUsersAsync(int days);
+        Task<IEnumerable<User>> GetUsersWithLowCreditAsync(decimal threshold);
+
+        // 用户关系查询
+        Task<User?> GetUserWithStudentAsync(int userId);
+        Task<User?> GetUserWithVirtualAccountAsync(int userId);
+        Task<User?> GetUserWithRefreshTokensAsync(int userId);
+        Task<User?> GetUserWithOrdersAsync(int userId);
+        Task<User?> GetUserWithProductsAsync(int userId);
+        Task<User?> GetUserWithNotificationsAsync(int userId);
+
+        // 批量操作
+        Task<IEnumerable<User>> GetUsersByIdsAsync(IEnumerable<int> userIds);
+        Task BulkUpdateLastLoginAsync(IEnumerable<int> userIds, DateTime loginTime);
+        Task BulkLockUsersAsync(IEnumerable<int> userIds, DateTime? lockoutEnd = null);
+        Task BulkUnlockUsersAsync(IEnumerable<int> userIds);
+
+        // 高级查询
+        Task<(IEnumerable<User> Users, int TotalCount)> SearchUsersAsync(
+            string? keyword = null,
+            string? department = null,
+            decimal? minCredit = null,
+            decimal? maxCredit = null,
+            bool? isActive = null,
+            bool? isLocked = null,
+            DateTime? registeredAfter = null,
+            DateTime? registeredBefore = null,
+            int pageNumber = 1,
+            int pageSize = 20);
+
+        // 用户数据统计相关
+        Task<Dictionary<string, int>> GetUserCountByDepartmentAsync();
+        Task<Dictionary<DateTime, int>> GetUserRegistrationTrendAsync(int days);
+        Task<IEnumerable<User>> GetTopUsersByCreditAsync(int count);
+    }
+}

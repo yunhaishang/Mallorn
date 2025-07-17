@@ -9,11 +9,10 @@ namespace CampusTrade.API.Models.Entities
     public class RechargeRecord
     {
         /// <summary>
-        /// 充值记录ID - 主键，自增
+        /// 充值记录ID - 主键，由序列和触发器自增
         /// </summary>
         [Key]
-        [Column("RECHARGE_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("RECHARGE_ID")]
         public int RechargeId { get; set; }
 
         /// <summary>
@@ -32,27 +31,25 @@ namespace CampusTrade.API.Models.Entities
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// 充值状态
+        /// 充值状态（默认值由Oracle处理）
         /// </summary>
         [Required]
         [Column("STATUS", TypeName = "VARCHAR2(20)")]
         [MaxLength(20)]
-        public string Status { get; set; } = "处理中";
+        public string Status { get; set; } = string.Empty;
 
         /// <summary>
-        /// 创建时间
+        /// 创建时间（由Oracle DEFAULT处理）
         /// </summary>
         [Required]
-        [Column("CREATE_TIME", TypeName = "TIMESTAMP")]
-        public DateTime CreateTime { get; set; } = DateTime.Now;
+        [Column("CREATE_TIME")]
+        public DateTime CreateTime { get; set; }
 
         /// <summary>
         /// 完成时间
         /// </summary>
-        [Column("COMPLETE_TIME", TypeName = "TIMESTAMP")]
+        [Column("COMPLETE_TIME")]
         public DateTime? CompleteTime { get; set; }
-
-        #region 导航属性
 
         /// <summary>
         /// 关联的用户
@@ -65,10 +62,6 @@ namespace CampusTrade.API.Models.Entities
         /// 通过用户ID间接关联
         /// </summary>
         public virtual VirtualAccount? VirtualAccount { get; set; }
-
-        #endregion
-
-        #region 业务方法
 
         /// <summary>
         /// 检查充值记录是否处于处理中状态
@@ -208,10 +201,6 @@ namespace CampusTrade.API.Models.Entities
             return $"充值{GetFormattedAmount()}，状态：{Status}，创建时间：{CreateTime:yyyy-MM-dd HH:mm:ss}{durationText}";
         }
 
-        #endregion
-
-        #region 静态方法
-
         /// <summary>
         /// 创建新的充值记录
         /// </summary>
@@ -242,10 +231,6 @@ namespace CampusTrade.API.Models.Entities
             };
         }
 
-        #endregion
-
-        #region 静态验证方法
-
         /// <summary>
         /// 验证充值状态是否有效
         /// </summary>
@@ -265,10 +250,6 @@ namespace CampusTrade.API.Models.Entities
             return ValidStatuses.ToArray();
         }
 
-        #endregion
-
-        #region 常量定义
-
         /// <summary>
         /// 有效的充值状态列表
         /// </summary>
@@ -286,7 +267,5 @@ namespace CampusTrade.API.Models.Entities
         /// 最大处理时间（分钟）
         /// </summary>
         public const int MaxProcessingMinutes = 1440; // 24小时
-
-        #endregion
     }
 }

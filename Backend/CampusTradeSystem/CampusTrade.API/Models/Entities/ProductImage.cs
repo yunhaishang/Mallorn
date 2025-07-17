@@ -14,8 +14,7 @@ namespace CampusTrade.API.Models.Entities
         /// 图片ID - 主键，对应Oracle中的image_id字段，自增
         /// </summary>
         [Key]
-        [Column("IMAGE_ID", TypeName = "NUMBER")]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Column("IMAGE_ID")]
         public int ImageId { get; set; }
 
         /// <summary>
@@ -23,7 +22,7 @@ namespace CampusTrade.API.Models.Entities
         /// 关联到products表，标识图片所属商品
         /// </summary>
         [Required]
-        [Column("PRODUCT_ID", TypeName = "NUMBER")]
+        [Column("PRODUCT_ID")]
         public int ProductId { get; set; }
 
         /// <summary>
@@ -38,7 +37,6 @@ namespace CampusTrade.API.Models.Entities
 
         /// <summary>
         /// 图片显示顺序 - 用于前端显示排序
-        /// 数据库中没有此字段，但应用层需要
         /// </summary>
         [NotMapped]
         public int DisplayOrder { get; set; } = 0;
