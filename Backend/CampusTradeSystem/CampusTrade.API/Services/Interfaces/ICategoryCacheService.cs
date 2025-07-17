@@ -4,6 +4,9 @@ using CampusTrade.API.Models.Entities;
 
 namespace CampusTrade.API.Services.Interface
 {
+    /// <summary>
+    /// 分类tree缓存服务接口
+    /// </summary>
     public interface ICategoryCacheService
     {
         /// <summary>

@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 
 namespace CampusTrade.API.Controllers;
-
+/// <summary>
+/// 缓存管理访问API
+/// 包含缓存清理的多方位控制
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 [Authorize(Roles = "Admin")] // 仅管理员可访问

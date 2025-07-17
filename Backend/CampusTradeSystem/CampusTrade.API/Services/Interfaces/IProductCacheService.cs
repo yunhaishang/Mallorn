@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace CampusTrade.API.Services.Interface
 {
+    /// <summary>
+    /// 商品缓存服务接口
+    /// </summary>
     public interface IProductCacheService
     {
         /// <summary>

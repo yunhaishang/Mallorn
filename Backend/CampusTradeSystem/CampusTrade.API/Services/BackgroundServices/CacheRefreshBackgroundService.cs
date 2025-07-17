@@ -19,6 +19,7 @@ namespace CampusTrade.API.Services.BackgroundServices
         private readonly IServiceProvider _serviceProvider;
 
         private readonly  CacheOptions _options;
+        
 
         public CacheRefreshBackgroundService(
             ILogger<CacheRefreshBackgroundService> logger,
@@ -29,7 +30,10 @@ namespace CampusTrade.API.Services.BackgroundServices
             _options = options;
             _serviceProvider = serviceProvider;
         }
-
+        
+        /// <summary>
+        /// 刷新各部分缓存
+        /// </summary>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Cache Refresh Service is starting with initial delay of {InitialDelay}", _options.InitialDelaySeconds);
@@ -77,7 +81,10 @@ namespace CampusTrade.API.Services.BackgroundServices
                 await Task.Delay(_options.InitialDelaySeconds, stoppingToken);
             }
         }
-
+        
+        /// <summary>
+        /// 停止缓存功能
+        /// </summary>
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("Cache Refresh Service is stopping");

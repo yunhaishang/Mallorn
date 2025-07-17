@@ -50,14 +50,28 @@ namespace CampusTrade.API.Services.Interface
         Task ClearAllAsync();
 
         /// <summary>
-        /// 获取缓存命中率
+        /// 更新缓存
         /// </summary>
         Task RefreshAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null);
+
+        /// <summary>
+        /// 获取缓存命中率
+        /// </summary>
         Task<double> GetHitRate();
+
+        /// <summary>
+        /// 获取缓存命中率
+        /// </summary>
         Task<Dictionary<string, DateTime?>> GetExpirationInfo(params string[] keys);
-
+        
+        /// <summary>
+        /// 失效all缓存
+        /// </summary>
         Task RemoveAllAsync(IEnumerable<string> keys);
-
+ 
+        /// <summary>
+        /// 前缀获得缓存内容
+        /// </summary>
         Task<IEnumerable<string>> GetKeysByPrefixAsync(string prefix);
     }
 }
