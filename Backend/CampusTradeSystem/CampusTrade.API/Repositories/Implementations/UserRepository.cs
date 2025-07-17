@@ -51,11 +51,6 @@ namespace CampusTrade.API.Repositories.Implementations
             return await _dbSet.FirstOrDefaultAsync(u => u.UserId == userId && u.IsActive == 1);
         }
 
-        public async Task<IEnumerable<User>> GetActiveUsersAsync()
-        {
-            return await _dbSet.Where(u => u.IsActive == 1).ToListAsync();
-        }
-
         public async Task<User?> GetUserWithDetailsAsync(int userId)
         {
             return await _dbSet

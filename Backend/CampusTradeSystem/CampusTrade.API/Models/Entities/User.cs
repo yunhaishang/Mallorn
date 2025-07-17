@@ -266,5 +266,25 @@ namespace CampusTrade.API.Models.Entities
     /// 记录该用户作为举报人提交的所有举报
     /// </summary>
     public virtual ICollection<Reports> Reports { get; set; } = new List<Reports>();
+
+    /// <summary>
+    /// 检查邮箱是否存在
+    /// </summary>
+    public bool IsEmailExists => !string.IsNullOrEmpty(Email);
+
+    /// <summary>
+    /// 检查用户名是否存在
+    /// </summary>
+    public bool IsUsernameExists => !string.IsNullOrEmpty(Username);
+
+    /// <summary>
+    /// 检查用户是否被锁定
+    /// </summary>
+    public bool IsUserLocked => IsLocked == 1;
+
+    /// <summary>
+    /// 检查用户邮箱是否已验证
+    /// </summary>
+    public bool IsEmailVerified => EmailVerified == 1;
   }
 }

@@ -35,5 +35,10 @@ namespace CampusTrade.API.Models.Entities
 
         // 导航属性：一个学生对应一个用户账户
         public virtual User? User { get; set; }
+
+        /// <summary>
+        /// 检查学生ID是否存在
+        /// </summary>
+        public bool IsStudentIdExists => !string.IsNullOrEmpty(StudentId);
     }
 }
