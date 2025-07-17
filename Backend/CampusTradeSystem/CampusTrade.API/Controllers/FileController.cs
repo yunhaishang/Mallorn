@@ -458,5 +458,102 @@ namespace CampusTrade.API.Controllers
                 existingCount = results.Count(r => (bool)r.GetType().GetProperty("exists")?.GetValue(r)!)
             });
         }
+
+        /// <summary>
+        /// 获取所有文件列表
+        /// </summary>
+        /// <param name="fileType">文件类型（可选）</param>
+        /// <returns>文件列表</returns>
+        [HttpGet("list")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllFiles([FromQuery] string? fileType = null)
+        {
+            FileType? parsedFileType = null;
+            
+            if (!string.IsNullOrEmpty(fileType))
+            {
+                if (!Enum.TryParse<FileType>(fileType, true, out var type))
+                {
+                    return BadRequest(new { message = "无效的文件类型" });
+                }
+                parsedFileType = type;
+            }
+
+            var result = await _fileService.GetAllFilesAsync(parsedFileType);
+            
+            if (result.Success)
+            {
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        files = result.Files.Select(f => new
+                        {
+                            fileName = f.FileName,
+                            fileUrl = f.FileUrl,
+                            fileType = f.FileType.ToString(),
+                            fileSize = f.FileSize,
+                            fileSizeFormatted = FileHelper.FormatFileSize(f.FileSize),
+                            createdAt = f.CreatedAt,
+                            modifiedAt = f.ModifiedAt,
+                            extension = f.Extension,
+                            thumbnailFileName = f.ThumbnailFileName,
+                            thumbnailUrl = f.ThumbnailUrl,
+                            isImage = FileHelper.IsImageFile(f.FileName),
+                            isDocument = FileHelper.IsDocumentFile(f.FileName)
+                        }),
+                        totalCount = result.TotalCount,
+                        fileTypeStats = result.FileTypeStats.ToDictionary(
+                            kvp => kvp.Key.ToString(),
+                            kvp => kvp.Value
+                        )
+                    }
+                });
+            }
+
+            return BadRequest(new { success = false, message = result.ErrorMessage });
+        }
+
+        /// <summary>
+        /// 获取文件统计信息
+        /// </summary>
+        /// <returns>文件统计信息</returns>
+        [HttpGet("stats")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetFileStats()
+        {
+            var result = await _fileService.GetAllFilesAsync();
+            
+            if (result.Success)
+            {
+                var totalSize = result.Files.Sum(f => f.FileSize);
+                var imageCount = result.Files.Count(f => FileHelper.IsImageFile(f.FileName));
+                var documentCount = result.Files.Count(f => FileHelper.IsDocumentFile(f.FileName));
+                var thumbnailCount = result.Files.Count(f => !string.IsNullOrEmpty(f.ThumbnailFileName));
+
+                return Ok(new
+                {
+                    success = true,
+                    data = new
+                    {
+                        totalFiles = result.TotalCount,
+                        totalSize = totalSize,
+                        totalSizeFormatted = FileHelper.FormatFileSize(totalSize),
+                        imageCount = imageCount,
+                        documentCount = documentCount,
+                        thumbnailCount = thumbnailCount,
+                        fileTypeStats = result.FileTypeStats.ToDictionary(
+                            kvp => kvp.Key.ToString(),
+                            kvp => kvp.Value
+                        ),
+                        avgFileSize = result.TotalCount > 0 ? totalSize / result.TotalCount : 0,
+                        avgFileSizeFormatted = result.TotalCount > 0 ? FileHelper.FormatFileSize(totalSize / result.TotalCount) : "0 B"
+                    }
+                });
+            }
+
+            return BadRequest(new { success = false, message = result.ErrorMessage });
+        }
     }
 }

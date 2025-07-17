@@ -667,5 +667,74 @@ namespace CampusTrade.Tests.UnitTests.Services
                 Directory.Delete(_testUploadPath, true);
             }
         }
+
+        #region 文件列表功能测试
+
+        [Fact]
+        public async Task GetAllFilesAsync_WithoutFileTypeFilter_ShouldReturnAllFiles()
+        {
+            // Arrange & Act
+            var result = await _fileService.GetAllFilesAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+            Assert.NotNull(result.Files);
+            Assert.NotNull(result.FileTypeStats);
+            Assert.Equal(result.Files.Count, result.TotalCount);
+        }
+
+        [Theory]
+        [InlineData(FileType.ProductImage)]
+        [InlineData(FileType.UserAvatar)]
+        [InlineData(FileType.ReportEvidence)]
+        public async Task GetAllFilesAsync_WithFileTypeFilter_ShouldReturnFilteredFiles(FileType fileType)
+        {
+            // Arrange & Act
+            var result = await _fileService.GetAllFilesAsync(fileType);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+            Assert.NotNull(result.Files);
+            Assert.All(result.Files, file => Assert.Equal(fileType, file.FileType));
+        }
+
+        [Fact]
+        public async Task GetAllFilesAsync_ShouldNotIncludeThumbnailsInMainList()
+        {
+            // Arrange & Act
+            var result = await _fileService.GetAllFilesAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+            Assert.All(result.Files, file => 
+                Assert.False(file.FileName.Contains("_thumb"), 
+                    $"Main file list should not contain thumbnail files, but found: {file.FileName}"));
+        }
+
+        [Fact]
+        public async Task GetAllFilesAsync_ShouldIncludeCorrectFileInformation()
+        {
+            // Arrange & Act
+            var result = await _fileService.GetAllFilesAsync();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.True(result.Success);
+            
+            foreach (var file in result.Files)
+            {
+                Assert.NotEmpty(file.FileName);
+                Assert.NotEmpty(file.FileUrl);
+                Assert.NotEmpty(file.Extension);
+                Assert.True(file.FileSize >= 0);
+                Assert.NotEqual(default(DateTime), file.CreatedAt);
+                Assert.NotEqual(default(DateTime), file.ModifiedAt);
+            }
+        }
+
+        #endregion
     }
 }
