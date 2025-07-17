@@ -15,11 +15,6 @@ namespace CampusTrade.API.Options
         public MemoryCacheOptions MemoryCache { get; set; } = new();
 
         /// <summary>
-        /// Redis缓存配置
-        /// </summary>
-        public RedisOptions Redis { get; set; } = new();
-
-        /// <summary>
         /// 默认缓存持续时间
         /// </summary>
         public TimeSpan DefaultCacheDuration { get; set; } = TimeSpan.FromMinutes(30);
@@ -45,14 +40,20 @@ namespace CampusTrade.API.Options
         public TimeSpan ConfigCacheDuration { get; set; } = TimeSpan.FromDays(1);
 
         /// <summary>
-        /// 热点数据缓存持续时间
-        /// </summary>
-        public TimeSpan HotDataCacheDuration { get; set; } = TimeSpan.FromMinutes(10);
-
-        /// <summary>
         /// 空结果缓存持续时间（防穿透）
         /// </summary>
         public TimeSpan NullResultCacheDuration { get; set; } = TimeSpan.FromMinutes(5);
+        
+        /// <summary>
+        /// 定时刷新间隔时间
+        /// </summary>
+        public TimeSpan IntervalMinutes { get; set; } = TimeSpan.FromMinutes(30);
+
+        /// <summary>
+        /// 初始延迟时间
+        /// </summary>
+        public TimeSpan InitialDelaySeconds { get; set; } = TimeSpan.FromSeconds(30);
+
     }
 
     /// <summary>
