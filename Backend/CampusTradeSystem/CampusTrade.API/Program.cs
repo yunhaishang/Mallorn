@@ -8,15 +8,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Serilog;
-using CampusTrade.API.Infrastructure;
-using Serilog.Events;
-using Serilog.Sinks.File;
 
 // 设置控制台编码为UTF-8，确保中文字符正确显示
 Console.OutputEncoding = Encoding.UTF8;
 
-// 1. 配置 Serilog 日志系统
+// 配置 Serilog 日志系统
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
@@ -85,16 +81,15 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
-// 1. 添加 Oracle 数据库连接
-// 2. 注册 DatabasePerformanceInterceptor
-builder.Services.AddSingleton<DatabasePerformanceInterceptor>();
-
-// 3. 添加服务到容器中（DbContext 注入拦截器）
+// 添加 Oracle 数据库连接以及拦截器
 builder.Services.AddDbContext<CampusTradeDbContext>(options =>
     options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection"))
            .AddInterceptors(builder.Services.BuildServiceProvider().GetRequiredService<DatabasePerformanceInterceptor>()));
 
-// 4. 注册日志清理后台服务
+// 添加Repository层服务
+builder.Services.AddRepositoryServices();
+
+// 添加日志清理后台服务
 builder.Services.AddHostedService<CampusTrade.API.Services.LogCleanupService>();
 
 // 添加JWT认证和Token服务
@@ -102,6 +97,9 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 
 // 添加认证相关服务
 builder.Services.AddAuthenticationServices();
+
+// 添加文件管理服务
+builder.Services.AddFileManagementServices(builder.Configuration);
 
 // 配置 CORS
 builder.Services.AddCorsPolicy(builder.Configuration);
@@ -182,11 +180,24 @@ else
 // 使用全局异常处理中间件
 app.UseGlobalExceptionHandler();
 
+// 使用安全头中间件
+app.UseSecurityHeaders();
+
 // 使用安全检查中间件
 app.UseSecurity();
 
-// 5. 启用性能日志中间件
 app.UseMiddleware<PerformanceMiddleware>();
+
+// 启用静态文件访问（用于文件下载和预览）
+app.UseStaticFiles();
+
+// 配置Storage目录的静态文件服务
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "Storage")),
+    RequestPath = "/files"
+});
 
 // 在开发环境下禁用HTTPS重定向，避免影响Swagger
 if (!app.Environment.IsDevelopment())
@@ -197,8 +208,15 @@ if (!app.Environment.IsDevelopment())
 // 启用路由匹配中间件
 app.UseRouting();
 
-// 启用 CORS
-app.UseCors("CampusTradeCors");
+// 启用 CORS - 在开发环境使用宽松的CORS策略
+if (app.Environment.IsDevelopment())
+{
+    app.UseCors("DevelopmentCors");
+}
+else
+{
+    app.UseCors("CampusTradeCors");
+}
 
 // 启用JWT验证中间件（在认证之前）
 app.UseJwtValidation();
