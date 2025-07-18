@@ -96,14 +96,14 @@ namespace CampusTrade.API.Services.Auth
                 await _unitOfWork.Users.AddAsync(user);
                 await _unitOfWork.CommitTransactionAsync();
 
-                _logger.LogInformation("用户注册成功: {Email}, 学号: {StudentId}", registerDto.Email, registerDto.StudentId);
+                Log.Logger.Information("用户注册成功: {Email}, 学号: {StudentId}", registerDto.Email, registerDto.StudentId);
                 return user;
             }
             catch (Exception ex)
             {
                 // 回滚事务
                 await _unitOfWork.RollbackTransactionAsync();
-                _logger.LogError(ex, "用户注册失败: {Email}, 学号: {StudentId}", registerDto.Email, registerDto.StudentId);
+                Log.Logger.Error(ex, "用户注册失败: {Email}, 学号: {StudentId}", registerDto.Email, registerDto.StudentId);
                 throw;
             }
         }
@@ -130,7 +130,7 @@ namespace CampusTrade.API.Services.Auth
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "获取用户信息失败: {Username}", username);
+                Log.Logger.Error(ex, "获取用户信息失败: {Username}", username);
                 return null;
             }
         }
