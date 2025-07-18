@@ -77,7 +77,7 @@ public static class TestDbContextFactory
                 FullName = "张三",
                 Phone = "13800138001",
                 CreditScore = 100,
-                IsActive = 1,
+                IsActive = Convert.ToInt32(true),
                 CreatedAt = DateTime.UtcNow.AddDays(-30),
                 LastLoginAt = DateTime.UtcNow.AddDays(-1),
                 LoginCount = 5
@@ -92,7 +92,7 @@ public static class TestDbContextFactory
                 FullName = "李四",
                 Phone = "13800138002",
                 CreditScore = 95,
-                IsActive = 0, // 测试禁用用户
+                IsActive = Convert.ToInt32(false), // 测试禁用用户
                 CreatedAt = DateTime.UtcNow.AddDays(-25),
                 LastLoginAt = DateTime.UtcNow.AddDays(-5),
                 LoginCount = 2
@@ -194,7 +194,7 @@ public static class TestDbContextFactory
                 FullName = "张三",
                 Phone = "13800138001",
                 CreditScore = 100,
-                IsActive = 1
+                IsActive = Convert.ToInt32(true)
             },
             2 => new User
             {
@@ -206,7 +206,7 @@ public static class TestDbContextFactory
                 FullName = "李四",
                 Phone = "13800138002",
                 CreditScore = 95,
-                IsActive = 0
+                IsActive = Convert.ToInt32(false)
             },
             _ => throw new ArgumentException($"No test user with ID {userId}")
         };

@@ -3,6 +3,8 @@ using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.API.Utils;
 using CampusTrade.API.Utils.Security;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 namespace CampusTrade.API.Services.Auth
 {
@@ -22,18 +24,15 @@ namespace CampusTrade.API.Services.Auth
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _configuration;
         private readonly ITokenService _tokenService;
-        private readonly ILogger<AuthService> _logger;
 
         public AuthService(
             IUnitOfWork unitOfWork,
             IConfiguration configuration,
-            ITokenService tokenService,
-            ILogger<AuthService> logger)
+            ITokenService tokenService)
         {
             _unitOfWork = unitOfWork;
             _configuration = configuration;
             _tokenService = tokenService;
-            _logger = logger;
         }
 
         public async Task<User?> RegisterAsync(RegisterDto registerDto)
@@ -146,7 +145,7 @@ namespace CampusTrade.API.Services.Auth
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "验证学生身份时发生错误: StudentId={StudentId}, Name={Name}", studentId, name);
+                Log.Logger.Error(ex, $"验证学生身份时发生错误: StudentId={studentId}, Name={name}");
                 return false;
             }
         }
@@ -159,7 +158,7 @@ namespace CampusTrade.API.Services.Auth
                 var user = await GetUserByUsernameAsync(loginRequest.Username);
                 if (user == null)
                 {
-                    _logger.LogWarning("登录失败：用户不存在或已禁用，用户名: {Username}", loginRequest.Username);
+                    Log.Logger.Warning("登录失败：用户不存在或已禁用，用户名: {Username}", loginRequest.Username);
                     return null;
                 }
 
@@ -173,11 +172,11 @@ namespace CampusTrade.API.Services.Auth
                     if (user.FailedLoginAttempts >= 4) // 已经有了4次失败，这次是第5次
                     {
                         await _unitOfWork.Users.LockUserAsync(user.UserId, DateTime.UtcNow.AddHours(1));
-                        _logger.LogWarning("账户因多次登录失败被锁定，用户ID: {UserId}", user.UserId);
+                        Log.Logger.Warning("账户因多次登录失败被锁定，用户ID: {UserId}", user.UserId);
                     }
 
                     await _unitOfWork.SaveChangesAsync();
-                    _logger.LogWarning("登录失败：密码错误，用户名: {Username}", loginRequest.Username);
+                    Log.Logger.Warning("登录失败：密码错误，用户名: {Username}", loginRequest.Username);
                     return null;
                 }
 
@@ -185,7 +184,7 @@ namespace CampusTrade.API.Services.Auth
                 var userEntity = await _unitOfWork.Users.GetByPrimaryKeyAsync(user.UserId);
                 if (userEntity != null && userEntity.IsLocked == 1)
                 {
-                    _logger.LogWarning("登录失败：账户被锁定，用户ID: {UserId}", user.UserId);
+                    Log.Logger.Warning("登录失败：账户被锁定，用户ID: {UserId}", user.UserId);
                     return null;
                 }
 
@@ -200,12 +199,12 @@ namespace CampusTrade.API.Services.Auth
                     userAgent,
                     loginRequest.DeviceId);
 
-                _logger.LogInformation("用户登录成功，用户ID: {UserId}, 设备ID: {DeviceId}", user.UserId, tokenResponse.DeviceId);
+                Log.Logger.Information("用户登录成功，用户ID: {UserId}, 设备ID: {DeviceId}", user.UserId, tokenResponse.DeviceId);
                 return tokenResponse;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "登录过程中发生异常，用户名: {Username}", loginRequest.Username);
+                Log.Logger.Error(ex, "登录过程中发生异常，用户名: {Username}", loginRequest.Username);
                 return null;
             }
         }
@@ -215,13 +214,13 @@ namespace CampusTrade.API.Services.Auth
             try
             {
                 var result = await _tokenService.RevokeRefreshTokenAsync(refreshToken, reason ?? "用户注销");
-                _logger.LogInformation("用户注销，Token: {Token}, 结果: {Result}",
+                Log.Logger.Information("用户注销，Token: {Token}, 结果: {Result}",
                     SecurityHelper.ObfuscateSensitive(refreshToken), result);
                 return result;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "注销失败，Token: {Token}", SecurityHelper.ObfuscateSensitive(refreshToken));
+                Log.Logger.Error(ex, "注销失败，Token: {Token}", SecurityHelper.ObfuscateSensitive(refreshToken));
                 return false;
             }
         }
@@ -231,12 +230,12 @@ namespace CampusTrade.API.Services.Auth
             try
             {
                 var revokedCount = await _tokenService.RevokeAllUserTokensAsync(userId, reason ?? "注销所有设备");
-                _logger.LogInformation("用户注销所有设备，用户ID: {UserId}, 撤销数量: {Count}", userId, revokedCount);
+                Log.Logger.Information("用户注销所有设备，用户ID: {UserId}, 撤销数量: {Count}", userId, revokedCount);
                 return revokedCount > 0;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "注销所有设备失败，用户ID: {UserId}", userId);
+                Log.Logger.Error(ex, "注销所有设备失败，用户ID: {UserId}", userId);
                 return false;
             }
         }
@@ -246,12 +245,12 @@ namespace CampusTrade.API.Services.Auth
             try
             {
                 var tokenResponse = await _tokenService.RefreshTokenAsync(refreshTokenRequest);
-                _logger.LogInformation("Token刷新成功，用户ID: {UserId}", tokenResponse.UserId);
+                Log.Logger.Information("Token刷新成功，用户ID: {UserId}", tokenResponse.UserId);
                 return tokenResponse;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Token刷新失败");
+                Log.Logger.Error(ex, "Token刷新失败");
                 throw;
             }
         }

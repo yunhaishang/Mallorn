@@ -7,6 +7,7 @@ using CampusTrade.API.Utils.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
 
 namespace CampusTrade.API.Extensions;
 
@@ -51,8 +52,7 @@ public static class ServiceCollectionExtensions
             {
                 OnAuthenticationFailed = context =>
                 {
-                    var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                    logger.LogWarning("JWT认证失败: {Error}", context.Exception.Message);
+                    Log.Logger.Warning("JWT认证失败: {Error}", context.Exception.Message);
                     return Task.CompletedTask;
                 },
                 OnTokenValidated = async context =>
@@ -66,8 +66,7 @@ public static class ServiceCollectionExtensions
                 },
                 OnChallenge = context =>
                 {
-                    var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                    logger.LogWarning("JWT认证质询: {Error}", context.Error);
+                    Log.Logger.Warning("JWT认证质询: {Error}", context.Error);
                     return Task.CompletedTask;
                 }
             };

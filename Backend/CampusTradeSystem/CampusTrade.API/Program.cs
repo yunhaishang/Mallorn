@@ -12,6 +12,15 @@ using Microsoft.OpenApi.Models;
 // 设置控制台编码为UTF-8，确保中文字符正确显示
 Console.OutputEncoding = Encoding.UTF8;
 
+// 配置 Serilog 日志系统
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File("logs/performance/perf-.log", rollingInterval: RollingInterval.Day)
+    .WriteTo.File("logs/errors/error-.log", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error)
+    .WriteTo.File("logs/business/business-.log", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
 
 // 添加服务到容器中
@@ -72,12 +81,16 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
-// 添加 Oracle 数据库连接
+// 添加 Oracle 数据库连接以及拦截器
 builder.Services.AddDbContext<CampusTradeDbContext>(options =>
-    options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .AddInterceptors(builder.Services.BuildServiceProvider().GetRequiredService<DatabasePerformanceInterceptor>()));
 
 // 添加Repository层服务
 builder.Services.AddRepositoryServices();
+
+// 添加日志清理后台服务
+builder.Services.AddHostedService<CampusTrade.API.Services.LogCleanupService>();
 
 // 添加JWT认证和Token服务
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -172,6 +185,8 @@ app.UseSecurityHeaders();
 
 // 使用安全检查中间件
 app.UseSecurity();
+
+app.UseMiddleware<PerformanceMiddleware>();
 
 // 启用静态文件访问（用于文件下载和预览）
 app.UseStaticFiles();
