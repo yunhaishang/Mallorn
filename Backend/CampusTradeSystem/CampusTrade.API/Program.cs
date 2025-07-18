@@ -2,12 +2,15 @@ using System.Text;
 using System.Text.Encodings.Web;
 using CampusTrade.API.Data;
 using CampusTrade.API.Extensions;
+using CampusTrade.API.Infrastructure;
 using CampusTrade.API.Middleware;
 using CampusTrade.API.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 
 // 设置控制台编码为UTF-8，确保中文字符正确显示
 Console.OutputEncoding = Encoding.UTF8;
@@ -85,10 +88,17 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
+// 注册数据库性能拦截器
+builder.Services.AddScoped<DatabasePerformanceInterceptor>();
+
 // 添加 Oracle 数据库连接以及拦截器
 builder.Services.AddDbContext<CampusTradeDbContext>(options =>
+{
+    var interceptor = builder.Services.BuildServiceProvider()
+        .GetRequiredService<DatabasePerformanceInterceptor>();
     options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection"))
-           .AddInterceptors(builder.Services.BuildServiceProvider().GetRequiredService<DatabasePerformanceInterceptor>()));
+           .AddInterceptors(interceptor);
+});
 
 // 添加Repository层服务
 builder.Services.AddRepositoryServices();

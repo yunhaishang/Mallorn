@@ -45,10 +45,9 @@ public class AuthServiceTests : IDisposable
 
         // 初始化AuthService（依赖模拟的UnitOfWork）
         _authService = new AuthService(
-            _mockUnitOfWork.Object, 
-            _mockConfiguration.Object, 
-            _mockTokenService.Object, 
-            _mockLogger.Object
+            _mockUnitOfWork.Object,
+            _mockConfiguration.Object,
+            _mockTokenService.Object
         );
     }
 
@@ -536,7 +535,7 @@ public class AuthServiceTests : IDisposable
             .ThrowsAsync(new UnauthorizedAccessException("无效的刷新令牌"));
 
         // Act & Assert
-        var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() => 
+        var exception = await Assert.ThrowsAsync<UnauthorizedAccessException>(() =>
             _authService.RefreshTokenAsync(request)
         );
         exception.Message.Should().Contain("无效的刷新令牌");
