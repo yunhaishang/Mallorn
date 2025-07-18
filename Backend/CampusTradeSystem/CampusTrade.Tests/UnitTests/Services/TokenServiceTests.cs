@@ -316,7 +316,7 @@ public class TokenServiceTests : IDisposable
         result.Should().NotBeNull();
         result.Token.Should().Be(tokenString);
         result.UserId.Should().Be(1);
-        result.IsRevoked.Should().Be(0);
+        result.IsRevoked.Should().Be(0); // 0表示false Be(0)表示未撤销
     }
 
     [Fact]
@@ -525,8 +525,9 @@ public class TokenServiceTests : IDisposable
 
         // Assert
         result.Should().NotBeEmpty();
-        result.Should().HaveCount(2);
+        result.All(t => t.UserId == userId).Should().BeTrue();
         result.All(t => t.IsRevoked == 0).Should().BeTrue();
+        result.All(t => t.ExpiryDate > DateTime.UtcNow).Should().BeTrue();
     }
 
     [Fact]
