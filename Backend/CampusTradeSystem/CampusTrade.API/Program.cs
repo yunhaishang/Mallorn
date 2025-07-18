@@ -76,6 +76,9 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddDbContext<CampusTradeDbContext>(options =>
     options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// 添加Repository层服务
+builder.Services.AddRepositoryServices();
+
 // 添加JWT认证和Token服务
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
@@ -163,6 +166,9 @@ else
 
 // 使用全局异常处理中间件
 app.UseGlobalExceptionHandler();
+
+// 使用安全头中间件
+app.UseSecurityHeaders();
 
 // 使用安全检查中间件
 app.UseSecurity();
