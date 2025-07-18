@@ -60,6 +60,7 @@ public class AuthServiceTests : IDisposable
         var activeUser = TestDbContextFactory.GetTestUser(1); // 活跃用户
         var inactiveUser = TestDbContextFactory.GetTestUser(2); // 禁用用户
         var validStudent = TestDbContextFactory.GetTestStudent("2025001"); // 有效学生
+        var validStudent2 = TestDbContextFactory.GetTestStudent("2025003"); // 王五学生
 
         // 1. 用户仓储模拟配置
         // 按邮箱查询
@@ -69,44 +70,61 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(inactiveUser);
         _mockUserRepository.Setup(r => r.GetByEmailAsync("nonexistent@test.com"))
             .ReturnsAsync((User?)null);
+        _mockUserRepository.Setup(r => r.GetByEmailAsync("wangwu@test.com"))
+            .ReturnsAsync((User?)null);
 
         // 按学号查询
         _mockUserRepository.Setup(r => r.GetByStudentIdAsync(activeUser.StudentId))
             .ReturnsAsync(activeUser);
         _mockUserRepository.Setup(r => r.GetByStudentIdAsync("9999999"))
             .ReturnsAsync((User?)null);
+        _mockUserRepository.Setup(r => r.GetByStudentIdAsync("2025003"))
+            .ReturnsAsync((User?)null);
 
-        // 按用户名查询（带激活状态检查）
-        _mockUserRepository.Setup(r => r.FirstOrDefaultAsync(It.Is<Expression<Func<User, bool>>>(
-            expr => expr.ToString().Contains("Username == \"zhangsan\"") && expr.ToString().Contains("IsActive == 1"))
-        )).ReturnsAsync(activeUser);
-        _mockUserRepository.Setup(r => r.FirstOrDefaultAsync(It.Is<Expression<Func<User, bool>>>(
-            expr => expr.ToString().Contains("Username == \"lisi\"") && expr.ToString().Contains("IsActive == 1"))
-        )).ReturnsAsync((User?)null); // 禁用用户返回null
+        // 按用户名查询（使用通用Mock）
+        _mockUserRepository.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<User, bool>>>()))
+            .ReturnsAsync((Expression<Func<User, bool>> expr) =>
+            {
+                var compiled = expr.Compile();
+                var users = new[] { activeUser, inactiveUser };
+                return users.FirstOrDefault(compiled);
+            });
 
         // 带学生信息的用户查询
         _mockUserRepository.Setup(r => r.GetUserWithStudentAsync(activeUser.UserId))
             .ReturnsAsync(activeUser);
+        _mockUserRepository.Setup(r => r.GetUserWithStudentAsync(inactiveUser.UserId))
+            .ReturnsAsync(inactiveUser);
 
-        // 2. 学生仓储模拟配置
-        // 验证学生身份（学号+姓名匹配）
-        _mockStudentRepository.Setup(r => r.FirstOrDefaultAsync(It.Is<Expression<Func<Student, bool>>>(
-            expr => expr.ToString().Contains("StudentId == \"2025001\"") && expr.ToString().Contains("Name == \"张三\""))
-        )).ReturnsAsync(validStudent);
-        // 学号或姓名不匹配
-        _mockStudentRepository.Setup(r => r.FirstOrDefaultAsync(It.Is<Expression<Func<Student, bool>>>(
-            expr => expr.ToString().Contains("StudentId == \"2025001\"") && expr.ToString().Contains("Name == \"错误姓名\""))
-        )).ReturnsAsync((Student?)null);
-        // 无效学号
-        _mockStudentRepository.Setup(r => r.FirstOrDefaultAsync(It.Is<Expression<Func<Student, bool>>>(
-            expr => expr.ToString().Contains("StudentId == \"9999999\""))
-        )).ReturnsAsync((Student?)null);
+        // 检查用户是否存在的方法
+        _mockUserRepository.Setup(r => r.AnyAsync(It.IsAny<Expression<Func<User, bool>>>()))
+            .ReturnsAsync((Expression<Func<User, bool>> expr) =>
+            {
+                var compiled = expr.Compile();
+                var users = new[] { activeUser, inactiveUser };
+                return users.Any(compiled);
+            });
+
+        // 2. 学生仓储模拟配置（使用通用Mock）
+        _mockStudentRepository.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<Student, bool>>>()))
+            .ReturnsAsync((Expression<Func<Student, bool>> expr) =>
+            {
+                var compiled = expr.Compile();
+                var students = new[] { validStudent, validStudent2 };
+                return students.FirstOrDefault(compiled);
+            });
 
         // 3. 通用仓储方法模拟
         _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>()))
             .ReturnsAsync((User u) => u); // 添加用户时返回自身
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync())
             .ReturnsAsync(1); // 模拟保存成功
+        _mockUnitOfWork.Setup(u => u.CommitTransactionAsync())
+            .Returns(Task.CompletedTask); // 模拟事务提交成功
+        _mockUnitOfWork.Setup(u => u.BeginTransactionAsync())
+            .Returns(Task.CompletedTask); // 模拟事务开始成功
+        _mockUnitOfWork.Setup(u => u.RollbackTransactionAsync())
+            .Returns(Task.CompletedTask); // 模拟事务回滚成功
     }
 
 

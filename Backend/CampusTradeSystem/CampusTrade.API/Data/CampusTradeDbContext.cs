@@ -147,6 +147,7 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.TwoFactorEnabled)
                     .HasColumnName("TWO_FACTOR_ENABLED")
+                    .HasColumnType("NUMBER(1)")
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.PasswordChangedAt)
@@ -159,6 +160,7 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.EmailVerified)
                     .HasColumnName("EMAIL_VERIFIED")
+                    .HasColumnType("NUMBER(1)")
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.EmailVerificationToken)
