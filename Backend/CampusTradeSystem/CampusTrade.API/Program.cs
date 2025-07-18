@@ -16,9 +16,13 @@ Console.OutputEncoding = Encoding.UTF8;
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
     .WriteTo.Console()
-    .WriteTo.File("logs/performance/perf-.log", rollingInterval: RollingInterval.Day)
-    .WriteTo.File("logs/errors/error-.log", rollingInterval: RollingInterval.Day, restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error)
-    .WriteTo.File("logs/business/business-.log", rollingInterval: RollingInterval.Day)
+    .WriteTo.File(Environment.GetEnvironmentVariable("LOG_PATH") ?? "logs/performance/perf-.log",
+        rollingInterval: RollingInterval.Day)
+    .WriteTo.File(Environment.GetEnvironmentVariable("ERROR_LOG_PATH") ?? "logs/errors/error-.log",
+        rollingInterval: RollingInterval.Day,
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error)
+    .WriteTo.File(Environment.GetEnvironmentVariable("BUSINESS_LOG_PATH") ?? "logs/business/business-.log",
+        rollingInterval: RollingInterval.Day)
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
