@@ -1,407 +1,308 @@
 using CampusTrade.API.Data;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Repositories.Implementations;
+using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.Tests.Helpers;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Moq;
 using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Repositories
 {
-    [Trait("TestCategory", "Repository")]
     public class RepositoryTests : IDisposable
     {
         private readonly CampusTradeDbContext _context;
-        private readonly Repository<User> _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly TestDataSeeder _seeder;
 
         public RepositoryTests()
         {
-            // 为每个测试实例创建独立的内存数据库，不自动播种数据
             var databaseName = $"TestDb_{Guid.NewGuid()}";
-            _context = TestDbContextFactory.CreateInMemoryDbContext(databaseName, seedData: false);
-            _userRepository = new Repository<User>(_context);
-
-            // 初始化测试数据
-            SeedTestDataAsync().Wait();
+            _context = TestDbContextFactory.CreateInMemoryDbContext(databaseName);
+            _unitOfWork = new UnitOfWork(_context);
+            _seeder = new TestDataSeeder(_context);
         }
 
         public void Dispose()
         {
+            _unitOfWork.Dispose();
             _context.Dispose();
         }
 
-        private async Task SeedTestDataAsync()
+        #region 交易业务测试
+        [Fact]
+        public async Task CreateOrder_WithNegotiation_CompletesSuccessfully()
         {
-            // 确保数据库是空的
-            await _context.Database.EnsureDeletedAsync();
-            await _context.Database.EnsureCreatedAsync();
+            // Arrange
+            await _seeder.SeedOrderTestDataAsync();
+            var buyer = await _context.Users.FirstOrDefaultAsync(u => u.Username == "buyer");
+            var seller = await _context.Users.FirstOrDefaultAsync(u => u.Username == "seller");
+            var product = await _context.Products.FirstOrDefaultAsync();
+            Assert.NotNull(buyer);
+            Assert.NotNull(seller);
+            Assert.NotNull(product);
 
-            var users = new List<User>
+            // 1. 创建订单
+            var order = new Order
             {
-                new User
+                BuyerId = buyer.UserId,
+                SellerId = seller.UserId,
+                ProductId = product.ProductId,
+                Status = Order.OrderStatus.PendingPayment,
+                CreateTime = DateTime.UtcNow
+            };
+            await _unitOfWork.Orders.AddAsync(order);
+            await _unitOfWork.SaveChangesAsync();
+
+            // 2. 创建议价
+            var negotiation = new Negotiation
+            {
+                OrderId = order.OrderId,
+                ProposedPrice = 80.0m,
+                Status = "等待回应",
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Negotiations.AddAsync(negotiation);
+            await _unitOfWork.SaveChangesAsync();
+
+            // 3. 更新订单金额
+            order.TotalAmount = negotiation.ProposedPrice;
+            _unitOfWork.Orders.Update(order);
+            await _unitOfWork.SaveChangesAsync();
+
+            // 验证
+            var savedOrder = await _unitOfWork.Orders.GetByPrimaryKeyAsync(order.OrderId);
+            Assert.NotNull(savedOrder);
+            Assert.Equal(negotiation.ProposedPrice, savedOrder.TotalAmount);
+        }
+        #endregion
+
+        #region 用户账户测试
+        [Fact]
+        public async Task VirtualAccount_Credit_UpdatesBalanceCorrectly()
+        {
+            await _seeder.SeedVirtualAccountDataAsync();
+            var creditResult = await _unitOfWork.VirtualAccounts.CreditAsync(1, 50.0m, "测试充值");
+            Assert.True(creditResult);
+            var account = await _unitOfWork.VirtualAccounts.GetByUserIdAsync(1);
+            Assert.NotNull(account);
+            Assert.Equal(150.0m, account.Balance);
+        }
+        #endregion
+
+        #region 商品管理测试
+        [Fact]
+        public async Task Products_Search_ReturnsCorrectResults()
+        {
+            // Arrange
+            await _seeder.SeedProductDataAsync();
+            var repository = _unitOfWork.Products;
+
+            // Act
+            var result = await repository.GetByTitleAsync("测试");
+            var products = result.Products;
+            var total = result.TotalCount;
+
+            // Assert
+            Assert.NotEmpty(products);
+            Assert.True(total > 0);
+            Assert.All(products, p => Assert.Contains("测试", p.Title));
+        }
+        #endregion
+
+        #region 用户唯一性测试
+        [Fact]
+        public async Task AddUser_DuplicateEmail_ShouldFail()
+        {
+            var user1 = new User { Email = "dup@test.com", Username = "user1" };
+            var user2 = new User { Email = "dup@test.com", Username = "user2" };
+            await _unitOfWork.Users.AddAsync(user1);
+            await _unitOfWork.SaveChangesAsync();
+            await Assert.ThrowsAsync<DbUpdateException>(async () =>
+            {
+                await _unitOfWork.Users.AddAsync(user2);
+                await _unitOfWork.SaveChangesAsync();
+            });
+        }
+        #endregion
+
+        #region 商品上下架与状态变更
+        [Fact]
+        public async Task Product_SetStatus_ChangesStatus()
+        {
+            var product = new Product { Title = "A", Status = Product.ProductStatus.OnSale };
+            await _unitOfWork.Products.AddAsync(product);
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.Products.SetProductStatusAsync(product.ProductId, Product.ProductStatus.OffShelf);
+            await _unitOfWork.SaveChangesAsync();
+            var updated = await _unitOfWork.Products.GetByPrimaryKeyAsync(product.ProductId);
+            Assert.NotNull(updated);
+            Assert.Equal(Product.ProductStatus.OffShelf, updated.Status);
+        }
+        #endregion
+
+        #region 通知发送与重试
+        [Fact]
+        public async Task Notification_MarkSendStatus_Works()
+        {
+            var notification = new Notification { RecipientId = 1, SendStatus = Notification.SendStatuses.Pending };
+            await _unitOfWork.Notifications.AddAsync(notification);
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.Notifications.MarkSendStatusAsync(notification.NotificationId, Notification.SendStatuses.Success);
+            await _unitOfWork.SaveChangesAsync();
+            var updated = await _unitOfWork.Notifications.GetByPrimaryKeyAsync(notification.NotificationId);
+            Assert.NotNull(updated);
+            Assert.Equal(Notification.SendStatuses.Success, updated.SendStatus);
+        }
+        #endregion
+
+        #region 充值与余额
+        [Fact]
+        public async Task RechargeRecord_UpdateStatus_ChangesStatus()
+        {
+            var record = new RechargeRecord { UserId = 1, Amount = 100, Status = "待处理" };
+            await _unitOfWork.RechargeRecords.AddAsync(record);
+            await _unitOfWork.SaveChangesAsync();
+            await _unitOfWork.RechargeRecords.UpdateRechargeStatusAsync(record.RechargeId, "已完成", DateTime.UtcNow);
+            await _unitOfWork.SaveChangesAsync();
+            var updated = await _unitOfWork.RechargeRecords.GetByPrimaryKeyAsync(record.RechargeId);
+            Assert.NotNull(updated);
+            Assert.Equal("已完成", updated.Status);
+        }
+        #endregion
+
+        #region 举报处理
+        [Fact]
+        public async Task Reports_BulkUpdateStatus_Works()
+        {
+            var report1 = new Reports { ReporterId = 1, Status = "待处理" };
+            var report2 = new Reports { ReporterId = 1, Status = "待处理" };
+            await _unitOfWork.Reports.AddAsync(report1);
+            await _unitOfWork.Reports.AddAsync(report2);
+            await _unitOfWork.SaveChangesAsync();
+            var ids = new List<int> { report1.ReportId, report2.ReportId };
+            await _unitOfWork.Reports.BulkUpdateReportStatusAsync(ids, "已处理");
+            await _unitOfWork.SaveChangesAsync();
+            var updated1 = await _unitOfWork.Reports.GetByPrimaryKeyAsync(report1.ReportId);
+            var updated2 = await _unitOfWork.Reports.GetByPrimaryKeyAsync(report2.ReportId);
+            Assert.NotNull(updated1);
+            Assert.NotNull(updated2);
+            Assert.Equal("已处理", updated1.Status);
+            Assert.Equal("已处理", updated2.Status);
+        }
+        #endregion
+
+        #region 评价与评分
+        [Fact]
+        public async Task Review_AddAndGetProductAverageRating_Works()
+        {
+            // Arrange: 创建商品、订单、抽象订单
+            var product = new Product { Title = "评分商品", Status = Product.ProductStatus.OnSale };
+            await _unitOfWork.Products.AddAsync(product);
+            await _unitOfWork.SaveChangesAsync();
+            var buyer = new User { Email = "buyer@rating.com", Username = "buyer" };
+            var seller = new User { Email = "seller@rating.com", Username = "seller" };
+            await _unitOfWork.Users.AddAsync(buyer);
+            await _unitOfWork.Users.AddAsync(seller);
+            await _unitOfWork.SaveChangesAsync();
+            var order = new Order
+            {
+                BuyerId = buyer.UserId,
+                SellerId = seller.UserId,
+                ProductId = product.ProductId,
+                Status = Order.OrderStatus.Completed,
+                CreateTime = DateTime.UtcNow
+            };
+            await _unitOfWork.Orders.AddAsync(order);
+            await _unitOfWork.SaveChangesAsync();
+            var review1 = new Review { OrderId = order.OrderId, Rating = 5 };
+            var review2 = new Review { OrderId = order.OrderId, Rating = 3 };
+            await _unitOfWork.Reviews.AddAsync(review1);
+            await _unitOfWork.Reviews.AddAsync(review2);
+            await _unitOfWork.SaveChangesAsync();
+            var avg = await _unitOfWork.Reviews.GetProductAverageRatingAsync(product.ProductId);
+            Assert.Equal(4, avg);
+        }
+        #endregion
+
+        #region TestDataSeeder
+
+        private class TestDataSeeder
+        {
+            private readonly CampusTradeDbContext _context;
+
+            public TestDataSeeder(CampusTradeDbContext context)
+            {
+                _context = context;
+            }
+
+            public async Task SeedOrderTestDataAsync()
+            {
+                if (!await _context.Orders.AnyAsync())
                 {
-                    UserId = 1,
-                    StudentId = "2023001",
-                    Email = "test1@example.com",
-                    Username = "testuser1",
-                    PasswordHash = "hashedpassword1",
-                    FullName = "测试用户1",
-                    CreditScore = 85.5m,
-                    IsActive = 1,
-                    CreatedAt = DateTime.UtcNow.AddDays(-10),
-                    UpdatedAt = DateTime.UtcNow,
-                    SecurityStamp = Guid.NewGuid().ToString()
-                },
-                new User
-                {
-                    UserId = 2,
-                    StudentId = "2023002",
-                    Email = "test2@example.com",
-                    Username = "testuser2",
-                    PasswordHash = "hashedpassword2",
-                    FullName = "测试用户2",
-                    CreditScore = 70.0m,
-                    IsActive = 1,
-                    CreatedAt = DateTime.UtcNow.AddDays(-5),
-                    UpdatedAt = DateTime.UtcNow,
-                    SecurityStamp = Guid.NewGuid().ToString()
-                },
-                new User
-                {
-                    UserId = 3,
-                    StudentId = "2023003",
-                    Email = "test3@example.com",
-                    Username = "testuser3",
-                    PasswordHash = "hashedpassword3",
-                    FullName = "测试用户3",
-                    CreditScore = 60.0m,
-                    IsActive = 0, // 非活跃用户
-                    CreatedAt = DateTime.UtcNow.AddDays(-15),
-                    UpdatedAt = DateTime.UtcNow,
-                    SecurityStamp = Guid.NewGuid().ToString()
+                    // 添加测试用户
+                    var buyer = new User { StudentId = "BUYER001", Username = "buyer" };
+                    var seller = new User { StudentId = "SELLER001", Username = "seller" };
+                    _context.Users.AddRange(buyer, seller);
+                    await _context.SaveChangesAsync();
+
+                    // 添加测试商品
+                    var product = new Product
+                    {
+                        Title = "测试商品",
+                        UserId = seller.UserId,
+                        BasePrice = 100.0m
+                    };
+                    _context.Products.Add(product);
+                    await _context.SaveChangesAsync();
                 }
-            };
+            }
 
-            _context.Users.AddRange(users);
-            await _context.SaveChangesAsync();
-        }
-
-        #region 基础查询测试
-
-        [Fact]
-        public async Task GetByPrimaryKeyAsync_ExistingUser_ReturnsUser()
-        {
-            // Act
-            var result = await _userRepository.GetByPrimaryKeyAsync(1);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(1, result.UserId);
-            Assert.Equal("test1@example.com", result.Email);
-        }
-
-        [Fact]
-        public async Task GetByPrimaryKeyAsync_NonExistingUser_ReturnsNull()
-        {
-            // Act
-            var result = await _userRepository.GetByPrimaryKeyAsync(999);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public async Task GetAllAsync_ReturnsAllUsers()
-        {
-            // Act
-            var result = await _userRepository.GetAllAsync();
-
-            // Assert
-            Assert.Equal(3, result.Count());
-        }
-
-        [Fact]
-        public async Task FindAsync_ActiveUsersOnly_ReturnsFilteredUsers()
-        {
-            // Act
-            var result = await _userRepository.FindAsync(u => u.IsActive == 1);
-
-            // Assert
-            Assert.Equal(2, result.Count());
-            Assert.True(result.All(u => u.IsActive == 1));
-        }
-
-        [Fact]
-        public async Task FirstOrDefaultAsync_ExistingEmail_ReturnsUser()
-        {
-            // Act
-            var result = await _userRepository.FirstOrDefaultAsync(u => u.Email == "test1@example.com");
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal("test1@example.com", result.Email);
-        }
-
-        [Fact]
-        public async Task FirstOrDefaultAsync_NonExistingEmail_ReturnsNull()
-        {
-            // Act
-            var result = await _userRepository.FirstOrDefaultAsync(u => u.Email == "nonexistent@example.com");
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public async Task AnyAsync_ExistingCondition_ReturnsTrue()
-        {
-            // Act
-            var result = await _userRepository.AnyAsync(u => u.CreditScore > 80);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public async Task AnyAsync_NonExistingCondition_ReturnsFalse()
-        {
-            // Act
-            var result = await _userRepository.AnyAsync(u => u.CreditScore > 100);
-
-            // Assert
-            Assert.False(result);
-        }
-
-        [Fact]
-        public async Task CountAsync_WithPredicate_ReturnsCorrectCount()
-        {
-            // Act
-            var result = await _userRepository.CountAsync(u => u.IsActive == 1);
-
-            // Assert
-            Assert.Equal(2, result);
-        }
-
-        [Fact]
-        public async Task CountAsync_WithoutPredicate_ReturnsTotal()
-        {
-            // Act
-            var result = await _userRepository.CountAsync();
-
-            // Assert
-            Assert.Equal(3, result);
-        }
-
-        #endregion
-
-        #region 分页查询测试
-
-        [Fact]
-        public async Task GetPagedAsync_FirstPage_ReturnsCorrectPage()
-        {
-            // Act
-            var result = await _userRepository.GetPagedAsync(
-                pageNumber: 1,
-                pageSize: 2,
-                filter: u => u.IsActive == 1,
-                orderBy: query => query.OrderBy(u => u.UserId)
-            );
-
-            // Assert
-            Assert.Equal(2, result.TotalCount);
-            Assert.Equal(2, result.Items.Count());
-            Assert.Equal(1, result.Items.First().UserId);
-        }
-
-        [Fact]
-        public async Task GetPagedAsync_SecondPage_ReturnsCorrectPage()
-        {
-            // Act
-            var result = await _userRepository.GetPagedAsync(
-                pageNumber: 2,
-                pageSize: 1,
-                filter: u => u.IsActive == 1,
-                orderBy: query => query.OrderBy(u => u.UserId)
-            );
-
-            // Assert
-            Assert.Equal(2, result.TotalCount);
-            Assert.Equal(1, result.Items.Count());
-            Assert.Equal(2, result.Items.First().UserId);
-        }
-
-        #endregion
-
-        #region 创建和更新测试
-
-        [Fact]
-        public async Task AddAsync_NewUser_AddsSuccessfully()
-        {
-            // Arrange
-            var newUser = new User
+            public async Task SeedVirtualAccountDataAsync()
             {
-                StudentId = "2023004",
-                Email = "test4@example.com",
-                Username = "testuser4",
-                PasswordHash = "hashedpassword4",
-                FullName = "测试用户4",
-                CreditScore = 60.0m,
-                IsActive = 1,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                SecurityStamp = Guid.NewGuid().ToString()
-            };
-
-            // Act
-            var result = await _userRepository.AddAsync(newUser);
-            await _userRepository.SaveChangesAsync();
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(4, await _userRepository.CountAsync());
-        }
-
-        [Fact]
-        public async Task AddRangeAsync_MultipleUsers_AddsSuccessfully()
-        {
-            // Arrange
-            var newUsers = new List<User>
-            {
-                new User
+                if (!await _context.VirtualAccounts.AnyAsync())
                 {
-                    StudentId = "2023005",
-                    Email = "test5@example.com",
-                    Username = "testuser5",
-                    PasswordHash = "hashedpassword5",
-                    FullName = "测试用户5",
-                    CreditScore = 60.0m,
-                    IsActive = 1,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    SecurityStamp = Guid.NewGuid().ToString()
-                },
-                new User
-                {
-                    StudentId = "2023006",
-                    Email = "test6@example.com",
-                    Username = "testuser6",
-                    PasswordHash = "hashedpassword6",
-                    FullName = "测试用户6",
-                    CreditScore = 60.0m,
-                    IsActive = 1,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow,
-                    SecurityStamp = Guid.NewGuid().ToString()
+                    var accounts = new List<VirtualAccount>
+                    {
+                        new VirtualAccount { UserId = 1, Balance = 100.0m },
+                        new VirtualAccount { UserId = 2, Balance = 100.0m }
+                    };
+                    _context.VirtualAccounts.AddRange(accounts);
+                    await _context.SaveChangesAsync();
                 }
-            };
+            }
 
-            // Act
-            await _userRepository.AddRangeAsync(newUsers);
-            await _userRepository.SaveChangesAsync();
+            public async Task SeedProductDataAsync()
+            {
+                // 添加测试数据
+                if (!await _context.Products.AnyAsync())
+                {
+                    var category = new Category { Name = "测试分类" };
+                    _context.Categories.Add(category);
+                    await _context.SaveChangesAsync();
 
-            // Assert
-            Assert.Equal(5, await _userRepository.CountAsync());
-        }
+                    var user = new User
+                    {
+                        StudentId = "TEST001",
+                        Username = "testuser",
+                        Email = "test@example.com"
+                    };
+                    _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
 
-        [Fact]
-        public async Task Update_ExistingUser_UpdatesSuccessfully()
-        {
-            // Arrange
-            var user = await _userRepository.GetByPrimaryKeyAsync(1);
-            Assert.NotNull(user);
+                    var products = Enumerable.Range(1, 5).Select(i => new Product
+                    {
+                        Title = $"测试商品{i}",
+                        Description = $"测试描述{i}",
+                        BasePrice = i * 100.0m,
+                        CategoryId = category.CategoryId,
+                        UserId = user.UserId,
+                        Status = "在售"
+                    });
 
-            user.FullName = "更新后的用户名";
-            user.UpdatedAt = DateTime.UtcNow;
-
-            // Act
-            _userRepository.Update(user);
-            await _userRepository.SaveChangesAsync();
-
-            // Assert
-            var updatedUser = await _userRepository.GetByPrimaryKeyAsync(1);
-            Assert.Equal("更新后的用户名", updatedUser.FullName);
-        }
-
-        #endregion
-
-        #region 删除测试
-
-        [Fact]
-        public async Task Delete_ExistingUser_DeletesSuccessfully()
-        {
-            // Arrange
-            var user = await _userRepository.GetByPrimaryKeyAsync(1);
-            Assert.NotNull(user);
-
-            // Act
-            _userRepository.Delete(user);
-            await _userRepository.SaveChangesAsync();
-
-            // Assert
-            Assert.Equal(2, await _userRepository.CountAsync());
-            Assert.Null(await _userRepository.GetByPrimaryKeyAsync(1));
-        }
-
-        [Fact]
-        public async Task DeleteByPrimaryKeyAsync_ExistingUser_DeletesSuccessfully()
-        {
-            // Act
-            await _userRepository.DeleteByPrimaryKeyAsync(1);
-            await _userRepository.SaveChangesAsync();
-
-            // Assert
-            Assert.Equal(2, await _userRepository.CountAsync());
-            Assert.Null(await _userRepository.GetByPrimaryKeyAsync(1));
-        }
-
-        [Fact]
-        public async Task DeleteRange_MultipleUsers_DeletesSuccessfully()
-        {
-            // Arrange
-            var users = await _userRepository.FindAsync(u => u.IsActive == 1);
-
-            // Act
-            _userRepository.DeleteRange(users);
-            await _userRepository.SaveChangesAsync();
-
-            // Assert
-            Assert.Equal(1, await _userRepository.CountAsync());
-            Assert.Equal(0, await _userRepository.CountAsync(u => u.IsActive == 1));
-        }
-
-        #endregion
-
-        #region 高级查询测试
-
-        [Fact]
-        public async Task GetWithIncludeAsync_WithFilter_ReturnsFilteredResults()
-        {
-            // Act
-            var result = await _userRepository.GetWithIncludeAsync(
-                filter: u => u.IsActive == 1,
-                orderBy: query => query.OrderByDescending(u => u.CreditScore)
-            );
-
-            // Assert
-            Assert.Equal(2, result.Count());
-            Assert.True(result.First().CreditScore >= result.Last().CreditScore);
-        }
-
-        #endregion
-
-        #region 批量操作测试
-
-        [Fact]
-        public async Task BulkDeleteAsync_WithPredicate_DeletesMatchingRecords()
-        {
-            // Act
-            var deletedCount = await _userRepository.BulkDeleteAsync(u => u.IsActive == 0);
-            await _userRepository.SaveChangesAsync();
-
-            // Assert
-            Assert.Equal(1, deletedCount);
-            Assert.Equal(2, await _userRepository.CountAsync());
+                    _context.Products.AddRange(products);
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
 
         #endregion

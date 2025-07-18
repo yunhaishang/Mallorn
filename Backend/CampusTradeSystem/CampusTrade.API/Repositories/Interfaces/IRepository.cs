@@ -67,5 +67,6 @@ namespace CampusTrade.API.Repositories.Interfaces
 
         // 保存更改
         Task<int> SaveChangesAsync();
+        #endregion
     }
 }

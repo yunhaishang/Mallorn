@@ -97,9 +97,7 @@ public class TokenServiceTests : IDisposable
             .ReturnsAsync(1);
     }
 
-    GenerateAccessTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task GenerateAccessTokenAsync_WithValidUser_ShouldReturnValidJwtToken()
     {
         // Arrange
@@ -143,11 +141,7 @@ public class TokenServiceTests : IDisposable
         jsonToken.Claims.Should().Contain(c => c.Type == "permission" && c.Value == "manage_users");
     }
 
-#endregion
-
-    GenerateRefreshTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task GenerateRefreshTokenAsync_WithValidUserId_ShouldReturnRefreshToken()
     {
         // Arrange
@@ -186,11 +180,7 @@ public class TokenServiceTests : IDisposable
         refreshToken.DeviceId.Should().NotBe("test_device"); // 应该是生成的指纹
     }
 
-#endregion
-
-    GenerateTokenResponseAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task GenerateTokenResponseAsync_WithValidUser_ShouldReturnCompleteTokenResponse()
     {
         // Arrange
@@ -228,11 +218,7 @@ public class TokenServiceTests : IDisposable
         _mockUserRepository.Verify(r => r.UpdateLastLoginAsync(user.UserId, ipAddress), Times.Once);
     }
 
-#endregion
-
-    ValidateAccessTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task ValidateAccessTokenAsync_WithValidToken_ShouldReturnValidResponse()
     {
         // Arrange
@@ -301,11 +287,7 @@ public class TokenServiceTests : IDisposable
         result.Error.Should().Contain("Token已被撤销");
     }
 
-#endregion
-
-    ValidateRefreshTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task ValidateRefreshTokenAsync_WithValidToken_ShouldReturnRefreshToken()
     {
         // Arrange
@@ -397,11 +379,7 @@ public class TokenServiceTests : IDisposable
         result.Should().BeNull();
     }
 
-#endregion
-
-    RefreshTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task RefreshTokenAsync_WithValidRequest_ShouldReturnNewTokenResponse()
     {
         // Arrange
@@ -464,11 +442,7 @@ public class TokenServiceTests : IDisposable
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => _tokenService.RefreshTokenAsync(request));
     }
 
-#endregion
-
-    RevokeRefreshTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task RevokeRefreshTokenAsync_WithValidToken_ShouldReturnTrue()
     {
         // Arrange
@@ -496,11 +470,7 @@ public class TokenServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
-#endregion
-
-    RevokeAllUserTokensAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task RevokeAllUserTokensAsync_WithValidUserId_ShouldReturnRevokedCount()
     {
         // Arrange
@@ -536,11 +506,7 @@ public class TokenServiceTests : IDisposable
         result.Should().Be(0);
     }
 
-#endregion
-
-    GetActiveRefreshTokensAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task GetActiveRefreshTokensAsync_WithValidUserId_ShouldReturnActiveTokens()
     {
         // Arrange
@@ -578,11 +544,7 @@ public class TokenServiceTests : IDisposable
         result.Should().BeEmpty();
     }
 
-#endregion
-
-    CleanupExpiredTokensAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task CleanupExpiredTokensAsync_WithExpiredTokens_ShouldRemoveExpiredTokens()
     {
         // Arrange
@@ -606,11 +568,7 @@ public class TokenServiceTests : IDisposable
         _mockUnitOfWork.Verify(u => u.SaveChangesAsync(), Times.Once);
     }
 
-#endregion
-
-    BlacklistTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task BlacklistTokenAsync_WithValidJti_ShouldAddToBlacklist()
     {
         // Arrange
@@ -625,11 +583,7 @@ public class TokenServiceTests : IDisposable
         _mockCache.Verify(c => c.CreateEntry($"blacklist:{jti}"), Times.Once);
     }
 
-#endregion
-
-    IsTokenBlacklistedAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task IsTokenBlacklistedAsync_WithBlacklistedToken_ShouldReturnTrue()
     {
         // Arrange
@@ -656,8 +610,6 @@ public class TokenServiceTests : IDisposable
         // Assert
         result.Should().BeFalse();
     }
-
-#endregion
 
     public void Dispose()
     {

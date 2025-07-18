@@ -1,6 +1,7 @@
 using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Repositories.Interfaces;
+using CampusTrade.API.Utils;
 using CampusTrade.API.Utils.Security;
 
 namespace CampusTrade.API.Services.Auth
@@ -54,8 +55,8 @@ namespace CampusTrade.API.Services.Auth
                 }
 
                 // 3. 检查邮箱是否已存在
-                var existingUserByEmail = await _unitOfWork.Users.IsEmailExistsAsync(registerDto.Email);
-                if (existingUserByEmail)
+                var userByEmail = await _unitOfWork.Users.GetByEmailAsync(registerDto.Email);
+                if (userByEmail != null)
                 {
                     throw new ArgumentException("该邮箱已被注册");
                 }
@@ -181,7 +182,8 @@ namespace CampusTrade.API.Services.Auth
                 }
 
                 // 检查账户是否被锁定
-                if (await _unitOfWork.Users.IsUserLockedAsync(user.UserId))
+                var userEntity = await _unitOfWork.Users.GetByPrimaryKeyAsync(user.UserId);
+                if (userEntity != null && userEntity.IsLocked == 1)
                 {
                     _logger.LogWarning("登录失败：账户被锁定，用户ID: {UserId}", user.UserId);
                     return null;

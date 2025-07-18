@@ -11,51 +11,81 @@ namespace CampusTrade.API.Repositories.Implementations
     /// </summary>
     public class VirtualAccountsRepository : Repository<VirtualAccount>, IVirtualAccountsRepository
     {
-        public VirtualAccountsRepository(CampusTradeDbContext context) : base(context)
-        {
-        }
+        public VirtualAccountsRepository(CampusTradeDbContext context) : base(context) { }
 
-        // 账户基础操作
+        #region 读取操作
+        /// <summary>
+        /// 根据用户ID获取虚拟账户
+        /// </summary>
         public async Task<VirtualAccount?> GetByUserIdAsync(int userId)
         {
-            return await _context.VirtualAccounts
-                .FirstOrDefaultAsync(va => va.UserId == userId);
+            return await _context.VirtualAccounts.FirstOrDefaultAsync(va => va.UserId == userId);
         }
-
+        /// <summary>
+        /// 获取用户余额
+        /// </summary>
         public async Task<decimal> GetBalanceAsync(int userId)
         {
             var account = await GetByUserIdAsync(userId);
             return account?.Balance ?? 0;
         }
-
+        /// <summary>
+        /// 检查余额是否充足
+        /// </summary>
         public async Task<bool> HasSufficientBalanceAsync(int userId, decimal amount)
         {
             var balance = await GetBalanceAsync(userId);
             return balance >= amount;
         }
+        /// <summary>
+        /// 获取系统总余额
+        /// </summary>
+        public async Task<decimal> GetTotalSystemBalanceAsync()
+        {
+            return await _context.VirtualAccounts.SumAsync(va => va.Balance);
+        }
+        /// <summary>
+        /// 获取余额大于指定值的账户
+        /// </summary>
+        public async Task<IEnumerable<VirtualAccount>> GetAccountsWithBalanceAboveAsync(decimal minBalance)
+        {
+            return await _context.VirtualAccounts.Include(va => va.User).Where(va => va.Balance >= minBalance).OrderByDescending(va => va.Balance).ToListAsync();
+        }
+        /// <summary>
+        /// 获取余额排名前N的账户
+        /// </summary>
+        public async Task<IEnumerable<VirtualAccount>> GetTopBalanceAccountsAsync(int count)
+        {
+            return await _context.VirtualAccounts.Include(va => va.User).OrderByDescending(va => va.Balance).Take(count).ToListAsync();
+        }
+        /// <summary>
+        /// 根据用户ID集合批量获取账户
+        /// </summary>
+        public async Task<IEnumerable<VirtualAccount>> GetAccountsByUserIdsAsync(IEnumerable<int> userIds)
+        {
+            return await _context.VirtualAccounts.Include(va => va.User).Where(va => userIds.Contains(va.UserId)).ToListAsync();
+        }
+        #endregion
 
-        // 余额操作（线程安全）
+        #region 更新操作
+        /// <summary>
+        /// 扣减余额
+        /// </summary>
         public async Task<bool> DebitAsync(int userId, decimal amount, string reason)
         {
             if (amount <= 0) return false;
-
             try
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
-                
-                // 先检查余额是否足够
                 var account = await GetByUserIdAsync(userId);
                 if (account == null || account.Balance < amount)
                 {
                     await transaction.RollbackAsync();
                     return false;
                 }
-
-                // 更新余额
                 account.Balance -= amount;
                 _context.VirtualAccounts.Update(account);
                 await _context.SaveChangesAsync();
-
                 await transaction.CommitAsync();
                 return true;
             }
@@ -64,34 +94,27 @@ namespace CampusTrade.API.Repositories.Implementations
                 return false;
             }
         }
-
+        /// <summary>
+        /// 增加余额（线程安全）
+        /// </summary>
         public async Task<bool> CreditAsync(int userId, decimal amount, string reason)
         {
             if (amount <= 0) return false;
-
             try
             {
                 var account = await GetByUserIdAsync(userId);
                 if (account == null)
                 {
-                    // 如果账户不存在，创建新账户
-                    account = new VirtualAccount
-                    {
-                        UserId = userId,
-                        Balance = amount,
-                        CreatedAt = DateTime.UtcNow
-                    };
+                    account = new VirtualAccount { UserId = userId, Balance = amount, CreatedAt = DateTime.UtcNow };
                     await AddAsync(account);
                     await _context.SaveChangesAsync();
                 }
                 else
                 {
-                    // 更新余额
                     account.Balance += amount;
                     _context.VirtualAccounts.Update(account);
                     await _context.SaveChangesAsync();
                 }
-
                 return true;
             }
             catch
@@ -99,96 +122,18 @@ namespace CampusTrade.API.Repositories.Implementations
                 return false;
             }
         }
-
-        public async Task<bool> TransferAsync(int fromUserId, int toUserId, decimal amount, string reason)
-        {
-            if (amount <= 0 || fromUserId == toUserId) return false;
-
-            try
-            {
-                using var transaction = await _context.Database.BeginTransactionAsync();
-
-                // 先扣除发送方余额
-                var debitSuccess = await DebitAsync(fromUserId, amount, reason);
-                if (!debitSuccess)
-                {
-                    await transaction.RollbackAsync();
-                    return false;
-                }
-
-                // 再增加接收方余额
-                var creditSuccess = await CreditAsync(toUserId, amount, reason);
-                if (!creditSuccess)
-                {
-                    await transaction.RollbackAsync();
-                    return false;
-                }
-
-                await transaction.CommitAsync();
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        // 冻结和解冻功能（这里简化实现，实际项目中可能需要单独的冻结余额字段）
-        public async Task<bool> FreezeBalanceAsync(int userId, decimal amount)
-        {
-            // 简化实现：直接扣除可用余额
-            return await DebitAsync(userId, amount, "余额冻结");
-        }
-
-        public async Task<bool> UnfreezeBalanceAsync(int userId, decimal amount)
-        {
-            // 简化实现：直接增加可用余额
-            return await CreditAsync(userId, amount, "余额解冻");
-        }
-
-        public async Task<decimal> GetFrozenBalanceAsync(int userId)
-        {
-            // 简化实现：返回0（实际项目中需要单独的冻结余额字段）
-            return 0;
-        }
-
-        // 账户统计
-        public async Task<decimal> GetTotalSystemBalanceAsync()
-        {
-            return await _context.VirtualAccounts
-                .SumAsync(va => va.Balance);
-        }
-
-        public async Task<IEnumerable<VirtualAccount>> GetAccountsWithBalanceAboveAsync(decimal minBalance)
-        {
-            return await _context.VirtualAccounts
-                .Include(va => va.User)
-                .Where(va => va.Balance >= minBalance)
-                .OrderByDescending(va => va.Balance)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<VirtualAccount>> GetTopBalanceAccountsAsync(int count)
-        {
-            return await _context.VirtualAccounts
-                .Include(va => va.User)
-                .OrderByDescending(va => va.Balance)
-                .Take(count)
-                .ToListAsync();
-        }
-
-        // 批量操作
+        /// <summary>
+        /// 批量更新余额
+        /// </summary>
         public async Task<bool> BatchUpdateBalancesAsync(Dictionary<int, decimal> balanceChanges)
         {
             try
             {
                 using var transaction = await _context.Database.BeginTransactionAsync();
-
                 foreach (var change in balanceChanges)
                 {
                     var userId = change.Key;
                     var amount = change.Value;
-
                     if (amount > 0)
                     {
                         await CreditAsync(userId, amount, "批量更新");
@@ -203,7 +148,6 @@ namespace CampusTrade.API.Repositories.Implementations
                         }
                     }
                 }
-
                 await transaction.CommitAsync();
                 return true;
             }
@@ -212,13 +156,6 @@ namespace CampusTrade.API.Repositories.Implementations
                 return false;
             }
         }
-
-        public async Task<IEnumerable<VirtualAccount>> GetAccountsByUserIdsAsync(IEnumerable<int> userIds)
-        {
-            return await _context.VirtualAccounts
-                .Include(va => va.User)
-                .Where(va => userIds.Contains(va.UserId))
-                .ToListAsync();
-        }
+        #endregion
     }
-} 
+}

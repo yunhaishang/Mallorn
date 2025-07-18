@@ -189,102 +189,69 @@ namespace CampusTrade.API.Models.Entities
     public string? EmailVerificationToken { get; set; }
 
     /// <summary>
-    /// 关联的学生信息 - 一对一关系
-    /// 通过StudentId外键关联Students表
+    /// 关联的学生信息
     /// </summary>
     [ForeignKey("StudentId")]
     public virtual Student? Student { get; set; }
 
     /// <summary>
-    /// 用户的刷新令牌集合 - 一对多关系
-    /// 用于JWT Token刷新机制，支持多设备登录
+    /// 用户的刷新令牌集合
     /// </summary>
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 
     /// <summary>
-    /// 用户的信用变更记录集合 - 一对多关系
-    /// 记录用户信用分数的所有变更历史
+    /// 用户的信用变更记录集合
     /// </summary>
     public virtual ICollection<CreditHistory> CreditHistories { get; set; } = new List<CreditHistory>();
 
     /// <summary>
-    /// 用户的登录日志集合 - 一对多关系
-    /// 记录用户登录的所有历史
+    /// 用户的登录日志集合
     /// </summary>
     public virtual ICollection<LoginLogs> LoginLogs { get; set; } = new List<LoginLogs>();
 
     /// <summary>
-    /// 用户的邮箱验证记录集合 - 一对多关系
-    /// 记录用户邮箱验证的所有历史
+    /// 用户的邮箱验证记录集合
     /// </summary>
     public virtual ICollection<EmailVerification> EmailVerifications { get; set; } = new List<EmailVerification>();
 
     /// <summary>
-    /// 用户发布的商品集合 - 一对多关系
-    /// 记录用户发布的所有商品
+    /// 用户发布的商品集合
     /// </summary>
     public virtual ICollection<Product> Products { get; set; } = new List<Product>();
 
     /// <summary>
-    /// 用户作为买家的订单集合 - 一对多关系
-    /// 记录用户作为买家的所有订单
+    /// 用户作为买家的订单集合
     /// </summary>
     public virtual ICollection<Order> BuyerOrders { get; set; } = new List<Order>();
 
     /// <summary>
-    /// 用户作为卖家的订单集合 - 一对多关系
-    /// 记录用户作为卖家的所有订单
+    /// 用户作为卖家的订单集合
     /// </summary>
     public virtual ICollection<Order> SellerOrders { get; set; } = new List<Order>();
 
     /// <summary>
-    /// 用户的虚拟账户 - 一对一关系
-    /// 每个用户只能有一个虚拟账户，用于余额管理
+    /// 用户的虚拟账户
     /// </summary>
     public virtual VirtualAccount? VirtualAccount { get; set; }
 
     /// <summary>
-    /// 用户的充值记录集合 - 一对多关系
-    /// 记录用户的所有充值交易历史
+    /// 用户的充值记录集合
     /// </summary>
     public virtual ICollection<RechargeRecord> RechargeRecords { get; set; } = new List<RechargeRecord>();
 
     /// <summary>
-    /// 管理员信息 - 一对一关系
-    /// 如果该用户是管理员，则包含相关的管理员信息
+    /// 管理员信息
     /// </summary>
     public virtual Admin? Admin { get; set; }
 
     /// <summary>
-    /// 接收的通知集合 - 一对多关系
-    /// 用户接收到的所有通知
+    /// 接收的通知集合
     /// </summary>
     public virtual ICollection<Notification> ReceivedNotifications { get; set; } = new List<Notification>();
 
     /// <summary>
-    /// 用户提交的举报集合 - 一对多关系
-    /// 记录该用户作为举报人提交的所有举报
+    /// 用户提交的举报集合
     /// </summary>
     public virtual ICollection<Reports> Reports { get; set; } = new List<Reports>();
-
-    /// <summary>
-    /// 检查邮箱是否存在
-    /// </summary>
-    public bool IsEmailExists => !string.IsNullOrEmpty(Email);
-
-    /// <summary>
-    /// 检查用户名是否存在
-    /// </summary>
-    public bool IsUsernameExists => !string.IsNullOrEmpty(Username);
-
-    /// <summary>
-    /// 检查用户是否被锁定
-    /// </summary>
-    public bool IsUserLocked => IsLocked == 1;
-
-    /// <summary>
-    /// 检查用户邮箱是否已验证
-    /// </summary>
-    public bool IsEmailVerified => EmailVerified == 1;
   }
 }

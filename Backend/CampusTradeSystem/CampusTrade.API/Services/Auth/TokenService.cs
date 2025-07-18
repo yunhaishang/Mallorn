@@ -117,7 +117,7 @@ public class TokenService : ITokenService
 
             foreach (var token in tokensToRevoke)
             {
-                token.Revoke("设备数量限制", user.UserId);
+                TokenHelper.RevokeRefreshToken(token, "设备数量限制", user.UserId);
             }
 
             // 生成访问令牌
@@ -225,7 +225,7 @@ public class TokenService : ITokenService
                 return null;
             }
 
-            if (!refreshTokenEntity.IsValid())
+            if (!TokenHelper.IsRefreshTokenValid(refreshTokenEntity))
             {
                 _logger.LogWarning("刷新令牌无效，用户ID: {UserId}, 原因: {Reason}",
                     refreshTokenEntity.UserId, refreshTokenEntity.IsRevoked == 1 ? "已撤销" : "已过期");
@@ -233,7 +233,7 @@ public class TokenService : ITokenService
             }
 
             // 更新最后使用时间
-            refreshTokenEntity.UpdateLastUsed();
+            TokenHelper.UpdateRefreshTokenLastUsed(refreshTokenEntity);
             await _unitOfWork.SaveChangesAsync();
 
             return refreshTokenEntity;
@@ -264,7 +264,7 @@ public class TokenService : ITokenService
             // Token轮换：撤销旧的刷新令牌
             if (_jwtOptions.RefreshTokenRotation || refreshTokenRequest.EnableRotation == true)
             {
-                refreshToken.Revoke("Token轮换", refreshToken.UserId);
+                TokenHelper.RevokeRefreshToken(refreshToken, "Token轮换", refreshToken.UserId);
             }
 
             // 生成新的Token响应
@@ -308,7 +308,7 @@ public class TokenService : ITokenService
                 return true;
             }
 
-            token.Revoke(reason, revokedBy);
+            TokenHelper.RevokeRefreshToken(token, reason, revokedBy);
 
             // 如果启用了级联撤销，同时撤销派生的Token
             if (_jwtOptions.RevokeDescendantRefreshTokens && !string.IsNullOrEmpty(token.ReplacedByToken))
@@ -336,7 +336,7 @@ public class TokenService : ITokenService
 
             foreach (var token in tokens)
             {
-                token.Revoke(reason ?? "撤销所有Token", revokedBy);
+                TokenHelper.RevokeRefreshToken(token, reason ?? "撤销所有Token", revokedBy);
             }
 
             await _unitOfWork.SaveChangesAsync();

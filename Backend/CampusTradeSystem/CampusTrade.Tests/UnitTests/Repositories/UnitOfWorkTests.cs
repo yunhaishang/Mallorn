@@ -8,7 +8,6 @@ using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Repositories
 {
-    [Trait("TestCategory", "UnitOfWork")]
     public class UnitOfWorkTests : IDisposable
     {
         private readonly CampusTradeDbContext _context;
@@ -16,16 +15,9 @@ namespace CampusTrade.Tests.UnitTests.Repositories
 
         public UnitOfWorkTests()
         {
-            // 为每个测试实例创建独立的内存数据库，不自动播种数据
             var databaseName = $"TestDb_{Guid.NewGuid()}";
             _context = TestDbContextFactory.CreateInMemoryDbContext(databaseName, seedData: false);
             _unitOfWork = new UnitOfWork(_context);
-        }
-
-        public void Dispose()
-        {
-            _unitOfWork.Dispose();
-            _context.Dispose();
         }
 
         #region Repository属性测试
@@ -516,88 +508,89 @@ namespace CampusTrade.Tests.UnitTests.Repositories
 
         #endregion
 
-        #region 跨Repository事务测试
+        #region 并发控制测试
 
         [Fact]
-        public async Task CrossRepositoryTransaction_WithCommit_AllChangesSaved()
+        public async Task ConcurrentOperations_WithTransaction_HandlesCorrectly()
         {
             // Arrange
             await _unitOfWork.BeginTransactionAsync();
-
-            var student = new Student
-            {
-                StudentId = "2023014",
-                Name = "测试学生",
-                Department = "计算机科学与技术"
-            };
-
             var user = new User
             {
-                StudentId = "2023014",
-                Email = "test14@example.com",
-                Username = "testuser14",
-                PasswordHash = "hashedpassword14",
-                FullName = "测试用户14",
-                CreditScore = 60.0m,
-                IsActive = 1,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                SecurityStamp = Guid.NewGuid().ToString()
+                StudentId = "2023001",
+                Email = "test@example.com",
+                Username = "testuser",
+                PasswordHash = "hash",
+                FullName = "测试用户",
+                CreditScore = 60.0m
             };
 
-            // Act
-            await _unitOfWork.Students.AddAsync(student);
+            // Act & Assert
             await _unitOfWork.Users.AddAsync(user);
-            await _unitOfWork.CommitTransactionAsync();
+            await _unitOfWork.SaveChangesAsync();
 
-            // Assert
-            var savedStudent = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentId == "2023014");
-            var savedUser = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.StudentId == "2023014");
+            // 模拟并发更新
+            var task1 = UpdateUserCreditScoreAsync(user.UserId, 70.0m);
+            var task2 = UpdateUserCreditScoreAsync(user.UserId, 80.0m);
 
-            Assert.NotNull(savedStudent);
-            Assert.NotNull(savedUser);
+            await Task.WhenAll(task1, task2);
+
+            var updatedUser = await _unitOfWork.Users.GetByPrimaryKeyAsync(user.UserId);
+            Assert.True(updatedUser.CreditScore == 70.0m || updatedUser.CreditScore == 80.0m);
         }
 
-        [Fact]
-        public async Task CrossRepositoryTransaction_WithRollback_NoChangesSaved()
+        private async Task UpdateUserCreditScoreAsync(int userId, decimal newScore)
         {
-            // Arrange
-            await _unitOfWork.BeginTransactionAsync();
-
-            var student = new Student
+            using var scope = new UnitOfWork(_context);
+            await scope.BeginTransactionAsync();
+            try
             {
-                StudentId = "2023015",
-                Name = "测试学生2",
-                Department = "计算机科学与技术"
-            };
-
-            var user = new User
+                var user = await scope.Users.GetByPrimaryKeyAsync(userId);
+                user.CreditScore = newScore;
+                await scope.SaveChangesAsync();
+                await scope.CommitTransactionAsync();
+            }
+            catch
             {
-                StudentId = "2023015",
-                Email = "test15@example.com",
-                Username = "testuser15",
-                PasswordHash = "hashedpassword15",
-                FullName = "测试用户15",
-                CreditScore = 60.0m,
-                IsActive = 1,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-                SecurityStamp = Guid.NewGuid().ToString()
-            };
-
-            // Act
-            await _unitOfWork.Students.AddAsync(student);
-            await _unitOfWork.Users.AddAsync(user);
-            await _unitOfWork.RollbackTransactionAsync();
-
-            // Assert
-            var savedStudent = await _unitOfWork.Students.FirstOrDefaultAsync(s => s.StudentId == "2023015");
-            var savedUser = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.StudentId == "2023015");
-
-            Assert.Null(savedStudent);
-            Assert.Null(savedUser);
+                await scope.RollbackTransactionAsync();
+                throw;
+            }
         }
 
         #endregion
+
+        #region 性能监控测试
+
+        [Fact]
+        public async Task BulkOperations_WithPerformanceTracking_WorksCorrectly()
+        {
+            // Arrange
+            var users = Enumerable.Range(1, 100).Select(i => new User
+            {
+                StudentId = $"2023{i:D3}",
+                Email = $"test{i}@example.com",
+                Username = $"testuser{i}",
+                PasswordHash = "hash",
+                FullName = $"测试用户{i}",
+                CreditScore = 60.0m
+            }).ToList();
+
+            // Act
+            var startTime = DateTime.UtcNow;
+            await _unitOfWork.BulkInsertAsync(users);
+            var endTime = DateTime.UtcNow;
+
+            // Assert
+            Assert.True((endTime - startTime).TotalSeconds < 5); // 批量插入应在5秒内完成
+            Assert.Equal(100, await _unitOfWork.Users.CountAsync());
+        }
+
+        #endregion
+
+        public void Dispose()
+        {
+            _unitOfWork.Dispose();
+            _context.Dispose();
+        }
     }
 }

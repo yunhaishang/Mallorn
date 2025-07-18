@@ -75,54 +75,10 @@ namespace CampusTrade.API.Models.Entities
             public const string PNG = ".png";
             public const string GIF = ".gif";
             public const string WEBP = ".webp";
-
             /// <summary>
             /// 获取所有支持的格式
             /// </summary>
             public static string[] GetAll() => new[] { JPEG, PNG, GIF, WEBP };
-        }
-
-        /// <summary>
-        /// 验证图片URL是否为支持的格式
-        /// </summary>
-        /// <returns>是否为支持的格式</returns>
-        public bool IsSupportedFormat()
-        {
-            if (string.IsNullOrEmpty(ImageUrl))
-                return false;
-
-            var extension = Path.GetExtension(ImageUrl).ToLower();
-            return SupportedFormats.GetAll().Contains(extension);
-        }
-
-        /// <summary>
-        /// 获取图片文件扩展名
-        /// </summary>
-        /// <returns>文件扩展名</returns>
-        public string GetFileExtension()
-        {
-            return Path.GetExtension(ImageUrl).ToLower();
-        }
-
-        /// <summary>
-        /// 验证图片URL是否有效
-        /// </summary>
-        /// <returns>是否有效</returns>
-        public bool IsValidImageUrl()
-        {
-            if (string.IsNullOrEmpty(ImageUrl))
-                return false;
-
-            // 检查URL格式
-            if (!Uri.TryCreate(ImageUrl, UriKind.Absolute, out Uri? uri))
-                return false;
-
-            // 检查是否为HTTP或HTTPS协议
-            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
-                return false;
-
-            // 检查文件格式
-            return IsSupportedFormat();
         }
     }
 }

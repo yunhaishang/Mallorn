@@ -98,17 +98,17 @@ namespace CampusTrade.API.Models.Entities
         public virtual Category Category { get; set; } = null!;
 
         /// <summary>
-        /// 商品图片集合 - 一对多关系
+        /// 商品图片集合
         /// </summary>
         public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
 
         /// <summary>
-        /// 提供该商品的换物请求集合 - 一对多关系
+        /// 提供该商品的换物请求集合
         /// </summary>
         public virtual ICollection<ExchangeRequest> OfferExchangeRequests { get; set; } = new List<ExchangeRequest>();
 
         /// <summary>
-        /// 请求该商品的换物请求集合 - 一对多关系
+        /// 请求该商品的换物请求集合
         /// </summary>
         public virtual ICollection<ExchangeRequest> RequestExchangeRequests { get; set; } = new List<ExchangeRequest>();
 
@@ -157,90 +157,6 @@ namespace CampusTrade.API.Models.Entities
             /// 500元以上
             /// </summary>
             VeryHigh = 3
-        }
-
-        /// <summary>
-        /// 检查商品状态是否有效
-        /// </summary>
-        /// <param name="status">商品状态</param>
-        /// <returns>是否有效</returns>
-        public static bool IsValidStatus(string status)
-        {
-            return status == ProductStatus.OnSale ||
-                   status == ProductStatus.OffShelf ||
-                   status == ProductStatus.InTransaction;
-        }
-
-        /// <summary>
-        /// 验证当前实例的状态是否有效
-        /// </summary>
-        /// <returns>是否有效</returns>
-        public bool IsValidStatus()
-        {
-            return IsValidStatus(Status);
-        }
-
-        /// <summary>
-        /// 判断商品是否已过期（需要自动下架）
-        /// </summary>
-        /// <returns>是否过期</returns>
-        public bool IsExpired()
-        {
-            return AutoRemoveTime.HasValue && AutoRemoveTime.Value < DateTime.Now;
-        }
-
-        /// <summary>
-        /// 判断商品是否可购买
-        /// </summary>
-        /// <returns>是否可购买</returns>
-        public bool IsAvailableForPurchase()
-        {
-            return Status == ProductStatus.OnSale && !IsExpired();
-        }
-
-        /// <summary>
-        /// 增加浏览量
-        /// </summary>
-        public void IncrementViewCount()
-        {
-            ViewCount++;
-        }
-
-        /// <summary>
-        /// 更新商品状态
-        /// </summary>
-        /// <param name="newStatus">新状态</param>
-        /// <exception cref="ArgumentException">状态无效时抛出</exception>
-        public void UpdateStatus(string newStatus)
-        {
-            if (!IsValidStatus(newStatus))
-                throw new ArgumentException($"无效的商品状态: {newStatus}");
-
-            Status = newStatus;
-        }
-
-        /// <summary>
-        /// 获取商品价格范围（用于筛选和分类）
-        /// </summary>
-        /// <returns>价格范围枚举值</returns>
-        public PriceRange GetPriceRange()
-        {
-            return BasePrice switch
-            {
-                <= 50 => PriceRange.Low,
-                <= 200 => PriceRange.Medium,
-                <= 500 => PriceRange.High,
-                _ => PriceRange.VeryHigh
-            };
-        }
-
-        /// <summary>
-        /// 设置自动下架时间
-        /// </summary>
-        /// <param name="days">多少天后自动下架</param>
-        public void SetAutoRemoveTime(int days)
-        {
-            AutoRemoveTime = DateTime.Now.AddDays(days);
         }
     }
 }

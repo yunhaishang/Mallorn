@@ -88,15 +88,19 @@ public class AuthServiceTests : IDisposable
         // 设置邮箱和学号存在性检查
         _mockUserRepository.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<User, bool>>>()))
             .ReturnsAsync(false);
-        _mockUserRepository.Setup(r => r.IsEmailExistsAsync("zhangsan@test.com"))
-            .ReturnsAsync(true);
-        _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025001"))
-            .ReturnsAsync(true);
+        // 注释掉不存在的接口方法的Mock设置
+        // _mockUserRepository.Setup(r => r.IsEmailExistsAsync("zhangsan@test.com")).ReturnsAsync(true);
+        // _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025001")).ReturnsAsync(true);
+        // _mockUserRepository.Setup(r => r.IsUserLockedAsync(1)).ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.IsEmailExistsAsync("wangwu@test.com")).ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025003")).ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.IsEmailExistsAsync("new@test.com")).ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025001")).ReturnsAsync(true);
+        // _mockUserRepository.Setup(r => r.IsEmailExistsAsync("zhangsan@test.com")).ReturnsAsync(true);
+        // _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025005")).ReturnsAsync(false);
     }
 
-    LoginWithTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task LoginWithTokenAsync_WithValidCredentials_ShouldReturnTokenResponse()
     {
         // Arrange
@@ -117,14 +121,10 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(testUser);
 
         // Mock user repository methods for login process
-        _mockUserRepository.Setup(r => r.IsUserLockedAsync(1))
-            .ReturnsAsync(false);
-        _mockUserRepository.Setup(r => r.ResetFailedLoginAttemptsAsync(1))
-            .Returns(Task.CompletedTask);
-        _mockUserRepository.Setup(r => r.UnlockUserAsync(1))
-            .Returns(Task.CompletedTask);
-        _mockUserRepository.Setup(r => r.UpdateLastLoginAsync(1, It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
+        // _mockUserRepository.Setup(r => r.IsUserLockedAsync(1)).ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.ResetFailedLoginAttemptsAsync(1)).Returns(Task.CompletedTask);
+        // _mockUserRepository.Setup(r => r.UnlockUserAsync(1)).Returns(Task.CompletedTask);
+        // _mockUserRepository.Setup(r => r.UpdateLastLoginAsync(1, It.IsAny<string>())).Returns(Task.CompletedTask);
 
         _mockTokenService.Setup(x => x.GenerateTokenResponseAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null))
                         .ReturnsAsync(expectedTokenResponse);
@@ -161,14 +161,10 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(testUser);
 
         // Mock user repository methods for login process
-        _mockUserRepository.Setup(r => r.IsUserLockedAsync(1))
-            .ReturnsAsync(false);
-        _mockUserRepository.Setup(r => r.ResetFailedLoginAttemptsAsync(1))
-            .Returns(Task.CompletedTask);
-        _mockUserRepository.Setup(r => r.UnlockUserAsync(1))
-            .Returns(Task.CompletedTask);
-        _mockUserRepository.Setup(r => r.UpdateLastLoginAsync(1, It.IsAny<string>()))
-            .Returns(Task.CompletedTask);
+        // _mockUserRepository.Setup(r => r.IsUserLockedAsync(1)).ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.ResetFailedLoginAttemptsAsync(1)).Returns(Task.CompletedTask);
+        // _mockUserRepository.Setup(r => r.UnlockUserAsync(1)).Returns(Task.CompletedTask);
+        // _mockUserRepository.Setup(r => r.UpdateLastLoginAsync(1, It.IsAny<string>())).Returns(Task.CompletedTask);
 
         _mockTokenService.Setup(x => x.GenerateTokenResponseAsync(It.IsAny<User>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null))
                         .ReturnsAsync(expectedTokenResponse);
@@ -237,11 +233,7 @@ public class AuthServiceTests : IDisposable
         result.Should().BeNull();
     }
 
-#endregion
-
-    RegisterAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task RegisterAsync_WithValidData_ShouldReturnUser()
     {
         // Arrange
@@ -263,10 +255,10 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(testStudent);
 
         // 设置邮箱和学号不存在
-        _mockUserRepository.Setup(r => r.IsEmailExistsAsync("wangwu@test.com"))
+        _mockUserRepository.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<User, bool>>>()))
             .ReturnsAsync(false);
-        _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025003"))
-            .ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.IsEmailExistsAsync("wangwu@test.com")).ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025003")).ReturnsAsync(false);
 
         // 设置用户创建
         _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>()))
@@ -305,10 +297,10 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(testStudent);
 
         // 设置邮箱不存在但学号存在
-        _mockUserRepository.Setup(r => r.IsEmailExistsAsync("new@test.com"))
+        _mockUserRepository.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<User, bool>>>()))
             .ReturnsAsync(false);
-        _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025001"))
-            .ReturnsAsync(true);
+        // _mockUserRepository.Setup(r => r.IsEmailExistsAsync("new@test.com")).ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025001")).ReturnsAsync(true);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => _authService.RegisterAsync(registerDto));
@@ -335,10 +327,10 @@ public class AuthServiceTests : IDisposable
             .ReturnsAsync(testStudent);
 
         // 设置邮箱存在但学号不存在
-        _mockUserRepository.Setup(r => r.IsEmailExistsAsync("zhangsan@test.com"))
-            .ReturnsAsync(true);
-        _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025005"))
+        _mockUserRepository.Setup(r => r.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<User, bool>>>()))
             .ReturnsAsync(false);
+        // _mockUserRepository.Setup(r => r.IsEmailExistsAsync("zhangsan@test.com")).ReturnsAsync(true);
+        // _mockUserRepository.Setup(r => r.IsStudentIdExistsAsync("2025005")).ReturnsAsync(false);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ArgumentException>(() => _authService.RegisterAsync(registerDto));
@@ -367,11 +359,7 @@ public class AuthServiceTests : IDisposable
         exception.Message.Should().Contain("学生身份验证失败");
     }
 
-#endregion
-
-    GetUserByUsernameAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task GetUserByUsernameAsync_WithValidUsername_ShouldReturnUser()
     {
         // Arrange
@@ -431,11 +419,7 @@ public class AuthServiceTests : IDisposable
         result.Should().BeNull();
     }
 
-#endregion
-
-    ValidateStudentAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task ValidateStudentAsync_WithValidStudent_ShouldReturnTrue()
     {
         // Act
@@ -485,13 +469,7 @@ public class AuthServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
-#endregion
-
-
-
-    LogoutAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task LogoutAsync_WithValidToken_ShouldReturnTrue()
     {
         // Arrange
@@ -522,11 +500,7 @@ public class AuthServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
-#endregion
-
-    LogoutAllDevicesAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task LogoutAllDevicesAsync_WithValidUserId_ShouldReturnTrue()
     {
         // Arrange
@@ -557,11 +531,7 @@ public class AuthServiceTests : IDisposable
         result.Should().BeFalse();
     }
 
-#endregion
-
-    RefreshTokenAsync Tests
-
-  [Fact]
+    [Fact]
     public async Task RefreshTokenAsync_WithValidRequest_ShouldReturnTokenResponse()
     {
         // Arrange
@@ -602,8 +572,6 @@ public class AuthServiceTests : IDisposable
             _authService.RefreshTokenAsync(refreshTokenRequest));
         exception.Message.Should().Contain("无效的刷新令牌");
     }
-
-#endregion
 
     public void Dispose()
     {

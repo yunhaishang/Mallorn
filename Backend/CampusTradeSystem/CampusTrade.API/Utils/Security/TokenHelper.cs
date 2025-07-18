@@ -205,4 +205,37 @@ public static class TokenHelper
 
         return claims;
     }
+
+    /// <summary>
+    /// 撤销刷新令牌
+    /// </summary>
+    /// <param name="token">刷新令牌实体</param>
+    /// <param name="reason">撤销原因</param>
+    /// <param name="revokedBy">撤销者ID</param>
+    public static void RevokeRefreshToken(Models.Entities.RefreshToken token, string? reason, int? revokedBy)
+    {
+        token.IsRevoked = 1;
+        token.RevokedAt = DateTime.UtcNow;
+        token.RevokeReason = reason;
+        token.RevokedBy = revokedBy;
+    }
+
+    /// <summary>
+    /// 判断刷新令牌是否有效
+    /// </summary>
+    /// <param name="token">刷新令牌实体</param>
+    /// <returns>是否有效</returns>
+    public static bool IsRefreshTokenValid(Models.Entities.RefreshToken token)
+    {
+        return token.IsRevoked == 0 && token.ExpiryDate > DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// 更新刷新令牌的最后使用时间
+    /// </summary>
+    /// <param name="token">刷新令牌实体</param>
+    public static void UpdateRefreshTokenLastUsed(Models.Entities.RefreshToken token)
+    {
+        token.LastUsedAt = DateTime.UtcNow;
+    }
 }

@@ -59,26 +59,5 @@ namespace CampusTrade.API.Models.Entities
             public const string ReportPenalty = "举报处罚";
             public const string PositiveReviewReward = "好评奖励";
         }
-
-        /// <summary>
-        /// 检查变更类型是否有效
-        /// </summary>
-        /// <param name="changeType">变更类型</param>
-        /// <returns>是否有效</returns>
-        public static bool IsValidChangeType(string changeType)
-        {
-            return changeType == ChangeTypes.TransactionCompleted ||
-                   changeType == ChangeTypes.ReportPenalty ||
-                   changeType == ChangeTypes.PositiveReviewReward;
-        }
-
-        /// <summary>
-        /// 验证当前实例的变更类型是否有效
-        /// </summary>
-        /// <returns>是否有效</returns>
-        public bool IsValidChangeType()
-        {
-            return IsValidChangeType(ChangeType);
-        }
     }
 }
