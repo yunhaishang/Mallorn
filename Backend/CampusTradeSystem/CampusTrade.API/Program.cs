@@ -82,8 +82,14 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 // 添加认证相关服务
 builder.Services.AddAuthenticationServices();
 
+// 添加后台服务
+builder.Services.AddBackgroundServices();
+
 // 配置 CORS
 builder.Services.AddCorsPolicy(builder.Configuration);
+
+// 注册Signal
+builder.Services.AddSignalR(); 
 
 var app = builder.Build();
 
@@ -185,6 +191,8 @@ app.UseAuthorization();
 
 // 映射控制器端点
 app.MapControllers();
+
+app.MapHub<CampusTrade.API.Hubs.NotificationHub>("/hubs/notification");
 
 app.Run();
 

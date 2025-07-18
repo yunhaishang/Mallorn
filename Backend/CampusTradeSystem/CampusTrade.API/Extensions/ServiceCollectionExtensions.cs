@@ -1,5 +1,6 @@
 using CampusTrade.API.Options;
 using CampusTrade.API.Services.Auth;
+using CampusTrade.API.Services.Background;
 using CampusTrade.API.Utils.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
@@ -119,6 +120,10 @@ public static class ServiceCollectionExtensions
         // 注册认证服务
         services.AddScoped<IAuthService, AuthService>();
 
+        // 注册通知服务
+        services.AddScoped<Services.Auth.NotifiService>();
+        services.AddScoped<Services.Auth.NotifiSenderService>();
+
         // 添加内存缓存（用于Token黑名单）
         services.AddMemoryCache();
 
@@ -150,6 +155,19 @@ public static class ServiceCollectionExtensions
                       .SetPreflightMaxAge(TimeSpan.FromMinutes(30));
             });
         });
+
+        return services;
+    }
+
+    /// <summary>
+    /// 添加后台服务
+    /// </summary>
+    /// <param name="services">服务集合</param>
+    /// <returns>服务集合</returns>
+    public static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+    {
+        // 注册通知发送后台服务
+        services.AddHostedService<NotificationBackgroundService>();
 
         return services;
     }
