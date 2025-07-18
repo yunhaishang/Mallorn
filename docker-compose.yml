@@ -29,7 +29,7 @@ services:
       dockerfile: CampusTrade.API/Dockerfile
     container_name: campus-trade-api
     ports:
-      - "5085:8080"
+      - "5000:8080"
     depends_on:
       - oracle-db
     environment:
