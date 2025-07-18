@@ -198,7 +198,7 @@ public static class JwtTestHelper
             StudentId = user.StudentId ?? "",
             CreditScore = user.CreditScore,
             DeviceId = deviceId,
-            UserStatus = user.IsActive == 1 ? "Active" : "Inactive",
+            UserStatus = user.IsActive ? "Active" : "Inactive",
             EmailVerified = true,
             TwoFactorEnabled = false,
             RefreshExpiresAt = DateTime.UtcNow.AddDays(7)

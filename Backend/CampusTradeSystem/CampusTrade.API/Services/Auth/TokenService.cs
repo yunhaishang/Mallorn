@@ -106,7 +106,7 @@ public class TokenService : ITokenService
         {
             // 简化设备数量限制：只保留最新的活跃Token
             var activeTokens = await _unitOfWork.RefreshTokens.FindAsync(
-                rt => rt.UserId == user.UserId && rt.IsRevoked == 0 && rt.ExpiryDate > DateTime.UtcNow);
+                rt => rt.UserId == user.UserId && !rt.IsRevoked && rt.ExpiryDate > DateTime.UtcNow);
 
             var tokensToRevoke = activeTokens
                 .OrderByDescending(rt => rt.LastUsedAt ?? rt.CreatedAt)
@@ -142,9 +142,9 @@ public class TokenService : ITokenService
                 StudentId = user.StudentId,
                 CreditScore = user.CreditScore,
                 DeviceId = refreshToken.DeviceId,
-                EmailVerified = user.EmailVerified == 1,
-                TwoFactorEnabled = user.TwoFactorEnabled == 1,
-                UserStatus = user.IsActive == 1 ? "Active" : "Inactive"
+                EmailVerified = user.EmailVerified,
+                TwoFactorEnabled = user.TwoFactorEnabled,
+                UserStatus = user.IsActive ? "Active" : "Inactive"
             };
 
             Log.Logger.Information("生成Token响应成功，用户ID: {UserId}", user.UserId);
@@ -226,7 +226,7 @@ public class TokenService : ITokenService
             if (!TokenHelper.IsRefreshTokenValid(refreshTokenEntity))
             {
                 Log.Logger.Warning("刷新令牌无效，用户ID: {UserId}, 原因: {Reason}",
-                    refreshTokenEntity.UserId, refreshTokenEntity.IsRevoked == 1 ? "已撤销" : "已过期");
+                    refreshTokenEntity.UserId, refreshTokenEntity.IsRevoked ? "已撤销" : "已过期");
                 return null;
             }
 
@@ -254,7 +254,7 @@ public class TokenService : ITokenService
         try
         {
             // 检查用户状态
-            if (refreshToken.User.IsActive != 1)
+            if (!refreshToken.User.IsActive)
             {
                 throw new UnauthorizedAccessException("用户账户已被禁用");
             }
@@ -300,7 +300,7 @@ public class TokenService : ITokenService
                 return false;
             }
 
-            if (token.IsRevoked == 1)
+            if (token.IsRevoked)
             {
                 Log.Logger.Debug("刷新令牌已经撤销: {Token}", SecurityHelper.ObfuscateSensitive(refreshToken));
                 return true;
@@ -330,7 +330,7 @@ public class TokenService : ITokenService
     {
         try
         {
-            var tokens = await _unitOfWork.RefreshTokens.FindAsync(rt => rt.UserId == userId && rt.IsRevoked == 0);
+            var tokens = await _unitOfWork.RefreshTokens.FindAsync(rt => rt.UserId == userId && !rt.IsRevoked);
 
             foreach (var token in tokens)
             {
@@ -354,7 +354,7 @@ public class TokenService : ITokenService
         try
         {
             return await _unitOfWork.RefreshTokens.FindAsync(
-                rt => rt.UserId == userId && rt.IsRevoked == 0 && rt.ExpiryDate > DateTime.UtcNow);
+                rt => rt.UserId == userId && !rt.IsRevoked && rt.ExpiryDate > DateTime.UtcNow);
         }
         catch (Exception ex)
         {

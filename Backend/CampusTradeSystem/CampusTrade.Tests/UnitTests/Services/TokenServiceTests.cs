@@ -88,7 +88,7 @@ public class TokenServiceTests : IDisposable
             UserAgent = "Test Browser",
             CreatedAt = DateTime.UtcNow.AddHours(-2),
             ExpiryDate = DateTime.UtcNow.AddDays(7), // 有效令牌
-            IsRevoked = 0
+            IsRevoked = false
         };
         var expiredRefreshToken = new RefreshToken
         {
@@ -96,7 +96,7 @@ public class TokenServiceTests : IDisposable
             Token = "expired_refresh_token",
             UserId = testUser.UserId,
             ExpiryDate = DateTime.UtcNow.AddDays(-1), // 已过期
-            IsRevoked = 0
+            IsRevoked = false
         };
         var revokedRefreshToken = new RefreshToken
         {
@@ -104,7 +104,7 @@ public class TokenServiceTests : IDisposable
             Token = "revoked_refresh_token",
             UserId = testUser.UserId,
             ExpiryDate = DateTime.UtcNow.AddDays(7),
-            IsRevoked = 1 // 已撤销
+            IsRevoked = true // 已撤销
         };
 
         // 1. 用户仓储模拟配置
@@ -382,7 +382,7 @@ public class TokenServiceTests : IDisposable
         result.Should().NotBeNull();
         result.Token.Should().Be(validToken);
         result.UserId.Should().Be(1);
-        result.IsRevoked.Should().Be(0); // 未撤销
+        result.IsRevoked.Should().Be(false); // 未撤销
     }
 
     [Fact]
@@ -543,7 +543,7 @@ public class TokenServiceTests : IDisposable
         // Assert
         result.Should().NotBeEmpty();
         result.All(t => t.UserId == userId).Should().BeTrue();
-        result.All(t => t.IsRevoked == 0).Should().BeTrue(); // 未撤销
+        result.All(t => t.IsRevoked == false).Should().BeTrue(); // 未撤销
         result.All(t => t.ExpiryDate > DateTime.UtcNow).Should().BeTrue(); // 未过期
     }
 

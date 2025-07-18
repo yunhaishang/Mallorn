@@ -84,12 +84,12 @@ namespace CampusTrade.API.Services.Auth
                     CreditScore = 60.0m, // 新用户默认信用分
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
-                    IsActive = 1,
+                    IsActive = true,
                     LoginCount = 0,
-                    IsLocked = 0,
+                    IsLocked = false,
                     FailedLoginAttempts = 0,
-                    TwoFactorEnabled = 0,
-                    EmailVerified = 0,
+                    TwoFactorEnabled = false,
+                    EmailVerified = false,
                     SecurityStamp = Guid.NewGuid().ToString()
                 };
 
@@ -114,14 +114,14 @@ namespace CampusTrade.API.Services.Auth
             {
                 // 支持邮箱或用户名查找
                 var userByEmail = await _unitOfWork.Users.GetByEmailAsync(username);
-                if (userByEmail != null && userByEmail.IsActive == 1)
+                if (userByEmail != null && userByEmail.IsActive)
                 {
                     return await _unitOfWork.Users.GetUserWithStudentAsync(userByEmail.UserId);
                 }
 
-                // 按用户名查找
-                var userByUsername = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Username == username && u.IsActive == 1);
-                if (userByUsername != null)
+                // 按用户名查找 - 分两步查询避免布尔字段查询问题
+                var userByUsername = await _unitOfWork.Users.FirstOrDefaultAsync(u => u.Username == username);
+                if (userByUsername != null && userByUsername.IsActive)
                 {
                     return await _unitOfWork.Users.GetUserWithStudentAsync(userByUsername.UserId);
                 }
@@ -182,7 +182,7 @@ namespace CampusTrade.API.Services.Auth
 
                 // 检查账户是否被锁定
                 var userEntity = await _unitOfWork.Users.GetByPrimaryKeyAsync(user.UserId);
-                if (userEntity != null && userEntity.IsLocked == 1)
+                if (userEntity != null && userEntity.IsLocked)
                 {
                     Log.Logger.Warning("登录失败：账户被锁定，用户ID: {UserId}", user.UserId);
                     return null;

@@ -99,7 +99,7 @@ namespace CampusTrade.API.Models.Entities
         /// 0=未激活，1=已激活，默认值1
         /// </summary>
         [Column("IS_ACTIVE", TypeName = "NUMBER(1)")]
-        public int IsActive { get; set; }
+        public bool IsActive { get; set; } = true;
 
         /// <summary>
         /// 最后登录时间 - 记录用户最近一次成功登录的时间
@@ -130,7 +130,7 @@ namespace CampusTrade.API.Models.Entities
         /// 0=未锁定，1=已锁定，默认值0
         /// </summary>
         [Column("IS_LOCKED", TypeName = "NUMBER(1)")]
-        public int IsLocked { get; set; }
+        public bool IsLocked { get; set; } = false;
 
         /// <summary>
         /// 锁定结束时间 - 临时锁定的解锁时间
@@ -153,7 +153,7 @@ namespace CampusTrade.API.Models.Entities
         /// 0=未启用，1=已启用，默认值0
         /// </summary>
         [Column("TWO_FACTOR_ENABLED", TypeName = "NUMBER(1)")]
-        public int TwoFactorEnabled { get; set; }
+        public bool TwoFactorEnabled { get; set; } = false;
 
         /// <summary>
         /// 密码修改时间 - 记录最后一次密码变更时间
@@ -178,7 +178,7 @@ namespace CampusTrade.API.Models.Entities
         /// 0=未验证，1=已验证，默认值0
         /// </summary>
         [Column("EMAIL_VERIFIED", TypeName = "NUMBER(1)")]
-        public int EmailVerified { get; set; }
+        public bool EmailVerified { get; set; } = false;
 
         /// <summary>
         /// 邮箱验证令牌 - 用于邮箱验证的临时令牌

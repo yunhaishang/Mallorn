@@ -72,7 +72,7 @@ namespace CampusTrade.API.Models.Entities
         /// </summary>
         [Required]
         [Column("IS_ANONYMOUS", TypeName = "NUMBER(1)")]
-        public int IsAnonymous { get; set; }
+        public bool IsAnonymous { get; set; } = false;
 
         /// <summary>
         /// 评价创建时间（由Oracle DEFAULT处理）

@@ -126,7 +126,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword",
                 FullName = "测试用户",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
@@ -172,7 +172,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword2",
                 FullName = "测试用户2",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
@@ -202,7 +202,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword3",
                 FullName = "测试用户3",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
@@ -236,7 +236,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                     PasswordHash = "hashedpassword4",
                     FullName = "测试用户4",
                     CreditScore = 60.0m,
-                    IsActive = 1,
+                    IsActive = true,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     SecurityStamp = Guid.NewGuid().ToString()
@@ -249,7 +249,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                     PasswordHash = "hashedpassword5",
                     FullName = "测试用户5",
                     CreditScore = 60.0m,
-                    IsActive = 1,
+                    IsActive = true,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     SecurityStamp = Guid.NewGuid().ToString()
@@ -279,7 +279,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                     PasswordHash = "hashedpassword6",
                     FullName = "测试用户6",
                     CreditScore = 60.0m,
-                    IsActive = 1,
+                    IsActive = true,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     SecurityStamp = Guid.NewGuid().ToString()
@@ -317,7 +317,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                     PasswordHash = "hashedpassword7",
                     FullName = "测试用户7",
                     CreditScore = 60.0m,
-                    IsActive = 1,
+                    IsActive = true,
                     CreatedAt = DateTime.UtcNow,
                     UpdatedAt = DateTime.UtcNow,
                     SecurityStamp = Guid.NewGuid().ToString()
@@ -352,7 +352,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword8",
                 FullName = "测试用户8",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
@@ -380,7 +380,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword9",
                 FullName = "测试用户9",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
@@ -408,7 +408,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword10",
                 FullName = "测试用户10",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
@@ -439,7 +439,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword11",
                 FullName = "测试用户11",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
@@ -453,7 +453,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword12",
                 FullName = "测试用户12",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
@@ -481,7 +481,7 @@ namespace CampusTrade.Tests.UnitTests.Repositories
                 PasswordHash = "hashedpassword13",
                 FullName = "测试用户13",
                 CreditScore = 60.0m,
-                IsActive = 1,
+                IsActive = true,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 SecurityStamp = Guid.NewGuid().ToString()
