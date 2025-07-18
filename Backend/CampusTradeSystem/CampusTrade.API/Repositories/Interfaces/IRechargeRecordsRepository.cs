@@ -1,7 +1,7 @@
-using CampusTrade.API.Models.Entities;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System;
+using CampusTrade.API.Models.Entities;
 
 namespace CampusTrade.API.Repositories.Interfaces
 {

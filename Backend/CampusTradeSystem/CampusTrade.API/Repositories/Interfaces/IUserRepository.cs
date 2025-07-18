@@ -1,5 +1,5 @@
-using CampusTrade.API.Models.Entities;
 using System.Linq.Expressions;
+using CampusTrade.API.Models.Entities;
 
 namespace CampusTrade.API.Repositories.Interfaces
 {

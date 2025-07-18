@@ -1,6 +1,6 @@
-using CampusTrade.API.Models.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CampusTrade.API.Models.Entities;
 
 namespace CampusTrade.API.Repositories.Interfaces
 {
@@ -99,4 +99,4 @@ namespace CampusTrade.API.Repositories.Interfaces
         Task<IEnumerable<dynamic>> GetNegotiationStatisticsAsync();
         #endregion
     }
-} 
+}

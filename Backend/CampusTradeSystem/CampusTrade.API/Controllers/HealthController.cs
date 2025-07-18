@@ -1,5 +1,5 @@
-using Microsoft.AspNetCore.Mvc;
 using CampusTrade.API.Models.DTOs.Common;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CampusTrade.API.Controllers
 {
@@ -17,12 +17,12 @@ namespace CampusTrade.API.Controllers
         [HttpGet("health")]
         public IActionResult HealthCheck()
         {
-            return Ok(ApiResponse<object>.CreateSuccess(new 
-            { 
-                status = "Healthy", 
+            return Ok(ApiResponse<object>.CreateSuccess(new
+            {
+                status = "Healthy",
                 timestamp = DateTime.UtcNow,
                 version = "1.0.0"
             }, "API服务正常运行"));
         }
     }
-} 
+}

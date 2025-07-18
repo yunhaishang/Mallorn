@@ -24,17 +24,17 @@ public static class TestDbContextFactory
             .Options;
 
         var context = new CampusTradeDbContext(options);
-        
+
         if (seedData)
         {
-        SeedTestData(context);
+            SeedTestData(context);
         }
         else
         {
             // 只确保数据库创建，不播种数据
             context.Database.EnsureCreated();
         }
-        
+
         return context;
     }
 

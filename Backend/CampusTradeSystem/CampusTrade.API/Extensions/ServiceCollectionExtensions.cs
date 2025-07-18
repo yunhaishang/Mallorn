@@ -1,6 +1,6 @@
 using CampusTrade.API.Options;
-using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.API.Repositories.Implementations;
+using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Services.File;
 using CampusTrade.API.Utils.Security;

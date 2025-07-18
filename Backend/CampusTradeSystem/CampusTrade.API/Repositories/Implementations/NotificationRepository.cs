@@ -1,8 +1,8 @@
+using System.Text.Json;
 using CampusTrade.API.Data;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 
 namespace CampusTrade.API.Repositories.Implementations
 {

@@ -46,4 +46,4 @@ namespace CampusTrade.API.Repositories.Interfaces
         Task<IEnumerable<dynamic>> GetCreditTrendsAsync(int userId, int days = 30);
         #endregion
     }
-} 
+}

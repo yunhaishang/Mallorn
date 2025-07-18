@@ -1,9 +1,10 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Options;
-using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Repositories.Interfaces;
+using CampusTrade.API.Services.Auth;
 using CampusTrade.Tests.Helpers;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
@@ -11,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using System.Security.Claims;
 
 namespace CampusTrade.Tests.UnitTests.Services;
 

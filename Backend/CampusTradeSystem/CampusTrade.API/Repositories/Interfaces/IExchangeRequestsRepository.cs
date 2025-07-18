@@ -77,4 +77,4 @@ namespace CampusTrade.API.Repositories.Interfaces
         Task<Dictionary<string, int>> GetExchangeStatusStatisticsAsync();
         #endregion
     }
-} 
+}

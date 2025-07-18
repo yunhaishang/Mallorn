@@ -1,8 +1,8 @@
 using System.Linq.Expressions;
 using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
-using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Repositories.Interfaces;
+using CampusTrade.API.Services.Auth;
 using CampusTrade.Tests.Helpers;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;

@@ -1,6 +1,6 @@
-using CampusTrade.API.Models.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using CampusTrade.API.Models.Entities;
 
 namespace CampusTrade.API.Repositories.Interfaces
 {
@@ -115,4 +115,4 @@ namespace CampusTrade.API.Repositories.Interfaces
         // 暂无特定高级查询，使用基础仓储接口方法
         #endregion
     }
-} 
+}

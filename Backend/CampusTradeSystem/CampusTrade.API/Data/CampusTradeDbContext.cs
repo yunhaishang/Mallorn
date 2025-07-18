@@ -42,7 +42,7 @@ namespace CampusTrade.API.Data
             {
                 entity.ToTable("STUDENTS");
                 entity.HasKey(e => e.StudentId);
-                
+
                 // 主键配置 - 对应Oracle中的student_id字段
                 entity.Property(e => e.StudentId)
                     .HasColumnName("STUDENT_ID")
@@ -71,7 +71,7 @@ namespace CampusTrade.API.Data
                 entity.HasKey(e => e.UserId);
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.StudentId).IsUnique();
-                
+
                 entity.Property(e => e.UserId)
                     .HasColumnName("USER_ID")
                     .ValueGeneratedOnAdd();
@@ -234,7 +234,7 @@ namespace CampusTrade.API.Data
             {
                 entity.ToTable("REFRESH_TOKENS");
                 entity.HasKey(e => e.Id);
-                
+
                 entity.Property(e => e.Id)
                     .HasColumnName("ID")
                     .ValueGeneratedOnAdd();

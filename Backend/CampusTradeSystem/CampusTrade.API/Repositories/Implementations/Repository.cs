@@ -1,7 +1,7 @@
+using System.Linq.Expressions;
 using CampusTrade.API.Data;
 using CampusTrade.API.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
 
 namespace CampusTrade.API.Repositories.Implementations
 {
