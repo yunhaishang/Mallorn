@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Serilog;
 
-namespace CampusTrade.API.Interceptors;
+namespace CampusTrade.API.Infrastructure;
 
 /// <summary>
 /// 数据库性能拦截器，用于记录慢查询日志

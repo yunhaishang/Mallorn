@@ -26,7 +26,7 @@ public class AuthServiceTests : IDisposable
         _mockLogger = MockHelper.CreateMockLogger<AuthService>();
 
         var context = TestDbContextFactory.CreateInMemoryDbContext();
-        _authService = new AuthService(context, _mockConfiguration.Object, _mockTokenService.Object, _mockLogger.Object);
+        _authService = new AuthService(context, _mockConfiguration.Object, _mockTokenService.Object);
     }
 
     #region LoginWithTokenAsync Tests

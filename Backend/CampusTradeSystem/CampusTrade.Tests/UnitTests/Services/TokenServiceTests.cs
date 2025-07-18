@@ -45,7 +45,7 @@ public class TokenServiceTests : IDisposable
         var jwtOptionsWrapper = MockHelper.CreateMockOptions(_jwtOptions);
         var context = TestDbContextFactory.CreateInMemoryDbContext();
 
-        _tokenService = new TokenService(context, jwtOptionsWrapper, _mockCache.Object, _mockLogger.Object);
+        _tokenService = new TokenService(context, jwtOptionsWrapper, _mockCache.Object);
     }
 
     #region GenerateAccessTokenAsync Tests
@@ -271,7 +271,7 @@ public class TokenServiceTests : IDisposable
         result.Should().NotBeNull();
         result!.Token.Should().Be(refreshTokenValue);
         result.UserId.Should().Be(1);
-        result.IsRevoked.Should().BeFalse();
+        result.IsRevoked.Should().Be(0);
     }
 
     [Fact]
@@ -416,7 +416,7 @@ public class TokenServiceTests : IDisposable
         result.Should().NotBeNull();
         result.Should().NotBeEmpty();
         result.All(t => t.UserId == userId).Should().BeTrue();
-        result.All(t => !t.IsRevoked).Should().BeTrue();
+        result.All(t => t.IsRevoked == 0).Should().BeTrue();
         result.All(t => t.ExpiryDate > DateTime.UtcNow).Should().BeTrue();
     }
 

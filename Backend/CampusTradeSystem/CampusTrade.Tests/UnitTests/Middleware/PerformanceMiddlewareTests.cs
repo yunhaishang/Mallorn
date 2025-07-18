@@ -56,7 +56,7 @@ public class PerformanceMiddlewareTests
         var response = await client.GetAsync("/test");
 
         // Assert
-        var logEvents = TestCorrelator.GetLogEventsFromContextGuid(testCorrelator.Guid);
+        var logEvents = TestCorrelator.GetLogEventsFromCurrentContext();
         foreach (var logEvent in logEvents)
         {
             Debug.WriteLine($"Log Event: {logEvent.Level} - {logEvent.RenderMessage()}");

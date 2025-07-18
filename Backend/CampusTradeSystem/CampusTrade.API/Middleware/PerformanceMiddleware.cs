@@ -45,7 +45,7 @@ public class PerformanceMiddleware
         }
     }
 
-    private string GetUserId(HttpContext context)
+    public string GetUserId(HttpContext context)
     {
         return context.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "Anonymous";
     }
