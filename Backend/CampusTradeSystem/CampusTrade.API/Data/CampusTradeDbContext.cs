@@ -118,6 +118,7 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.IsActive)
                     .HasColumnName("IS_ACTIVE")
+                    .HasColumnType("NUMBER(1)")
                     .HasDefaultValue(1);
 
                 // JWT Token相关字段配置
@@ -134,6 +135,7 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.IsLocked)
                     .HasColumnName("IS_LOCKED")
+                    .HasColumnType("NUMBER(1)")
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.LockoutEnd)
@@ -254,7 +256,8 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.IsRevoked)
                     .HasColumnName("IS_REVOKED")
-                    .HasDefaultValue(false);
+                    .HasColumnType("NUMBER(1)")
+                    .HasDefaultValue(0);
 
                 entity.Property(e => e.CreatedAt)
                     .HasColumnName("CREATED_AT")
@@ -493,7 +496,7 @@ namespace CampusTrade.API.Data
                 // 使用状态配置 - 默认值0
                 entity.Property(e => e.IsUsed)
                     .HasColumnName("IS_USED")
-                    .HasColumnType("NUMBER")
+                    .HasColumnType("NUMBER(1)")
                     .HasDefaultValue(0);
 
                 // 创建时间配置 - 默认当前时间
@@ -1361,7 +1364,7 @@ namespace CampusTrade.API.Data
                 // 是否启用配置 - 默认值1
                 entity.Property(e => e.IsActive)
                     .HasColumnName("IS_ACTIVE")
-                    .HasColumnType("NUMBER")
+                    .HasColumnType("NUMBER(1)")
                     .IsRequired()
                     .HasDefaultValue(1);
 
