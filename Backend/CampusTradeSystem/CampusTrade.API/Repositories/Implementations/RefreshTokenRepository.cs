@@ -43,7 +43,7 @@ namespace CampusTrade.API.Repositories.Implementations
         public async Task<IEnumerable<RefreshToken>> GetActiveTokensByUserAsync(int userId)
         {
             return await _context.RefreshTokens
-                .Where(rt => rt.UserId == userId && !rt.IsRevoked && rt.ExpiryDate > DateTime.UtcNow)
+                .Where(rt => rt.UserId == userId && rt.IsRevoked == 0 && rt.ExpiryDate > DateTime.UtcNow)
                 .OrderByDescending(rt => rt.CreatedAt)
                 .ToListAsync();
         }
@@ -65,7 +65,7 @@ namespace CampusTrade.API.Repositories.Implementations
         public async Task<IEnumerable<RefreshToken>> GetSuspiciousTokensAsync()
         {
             return await _context.RefreshTokens
-                .Where(rt => !rt.IsRevoked && rt.ExpiryDate > DateTime.UtcNow)
+                .Where(rt => rt.IsRevoked == 0 && rt.ExpiryDate > DateTime.UtcNow)
                 .GroupBy(rt => rt.UserId)
                 .Where(g => g.Count() > 5)
                 .SelectMany(g => g)
@@ -81,7 +81,7 @@ namespace CampusTrade.API.Repositories.Implementations
         {
             var refreshToken = await GetByTokenAsync(token);
             if (refreshToken == null) return false;
-            refreshToken.IsRevoked = true;
+            refreshToken.IsRevoked = 1;
             refreshToken.RevokedAt = DateTime.UtcNow;
             refreshToken.RevokeReason = reason;
             Update(refreshToken);
@@ -96,7 +96,7 @@ namespace CampusTrade.API.Repositories.Implementations
             var tokens = await GetActiveTokensByUserAsync(userId);
             foreach (var token in tokens)
             {
-                token.IsRevoked = true;
+                token.IsRevoked = 1;
                 token.RevokedAt = DateTime.UtcNow;
                 token.RevokeReason = reason;
                 Update(token);
@@ -124,7 +124,7 @@ namespace CampusTrade.API.Repositories.Implementations
         public async Task<bool> IsTokenValidAsync(string token)
         {
             var refreshToken = await GetByTokenAsync(token);
-            return refreshToken != null && !refreshToken.IsRevoked && refreshToken.ExpiryDate > DateTime.UtcNow;
+            return refreshToken != null && refreshToken.IsRevoked == 0 && refreshToken.ExpiryDate > DateTime.UtcNow;
         }
         #endregion
     }

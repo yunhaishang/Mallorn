@@ -214,7 +214,7 @@ public static class TokenHelper
     /// <param name="revokedBy">撤销者ID</param>
     public static void RevokeRefreshToken(Models.Entities.RefreshToken token, string? reason, int? revokedBy)
     {
-        token.IsRevoked = true;
+        token.IsRevoked = 1;
         token.RevokedAt = DateTime.UtcNow;
         token.RevokeReason = reason;
         token.RevokedBy = revokedBy;
@@ -227,7 +227,7 @@ public static class TokenHelper
     /// <returns>是否有效</returns>
     public static bool IsRefreshTokenValid(Models.Entities.RefreshToken token)
     {
-        return !token.IsRevoked && token.ExpiryDate > DateTime.UtcNow;
+        return token.IsRevoked == 0 && token.ExpiryDate > DateTime.UtcNow;
     }
 
     /// <summary>

@@ -262,8 +262,6 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.IsRevoked)
                     .HasColumnName("IS_REVOKED")
-                    .HasColumnType("NUMBER(1)")
-                    .HasConversion(v => v ? 1 : 0, v => v == 1)
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.CreatedAt)

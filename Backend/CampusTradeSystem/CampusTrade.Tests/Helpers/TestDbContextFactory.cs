@@ -114,7 +114,7 @@ public static class TestDbContextFactory
                 UserAgent = "Test Browser",
                 CreatedAt = DateTime.UtcNow.AddHours(-2),
                 ExpiryDate = DateTime.UtcNow.AddDays(7),
-                IsRevoked = false // 0 = not revoked
+                IsRevoked = 0 // 0 = not revoked
             },
             new RefreshToken
             {
@@ -126,7 +126,7 @@ public static class TestDbContextFactory
                 UserAgent = "Test Mobile",
                 CreatedAt = DateTime.UtcNow.AddDays(-10),
                 ExpiryDate = DateTime.UtcNow.AddDays(-3), // 已过期
-                IsRevoked = false // 0 = not revoked
+                IsRevoked = 0 // 0 = not revoked
             }
         };
 
