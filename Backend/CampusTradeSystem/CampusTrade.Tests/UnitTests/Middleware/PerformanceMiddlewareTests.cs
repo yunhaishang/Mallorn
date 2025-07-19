@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using CampusTrade.API.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,7 +13,6 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Sinks.TestCorrelator;
 using Xunit;
-using CampusTrade.API.Middleware;
 
 namespace CampusTrade.API.Tests.Middleware;
 
