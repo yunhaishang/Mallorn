@@ -64,8 +64,8 @@ namespace CampusTrade.API.Models.Entities
         /// 使用状态 - 对应Oracle中的is_used字段
         /// false=未使用，true=已使用，默认值false
         /// </summary>
-        [Column("IS_USED", TypeName = "NUMBER(1)")]
-        public bool IsUsed { get; set; } = false;
+        [Column("IS_USED")]
+        public int IsUsed { get; set; } = 0;
 
         /// <summary>
         /// 创建时间 - 对应Oracle中的created_at字段，默认为当前时间

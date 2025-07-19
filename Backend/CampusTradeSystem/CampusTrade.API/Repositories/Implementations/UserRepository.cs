@@ -24,7 +24,7 @@ namespace CampusTrade.API.Repositories.Implementations
             user.UpdatedAt = DateTime.UtcNow;
             user.SecurityStamp = Guid.NewGuid().ToString();
             user.CreditScore = 60.0m; // 默认信用分数
-            user.IsActive = true;
+            user.IsActive = 1;
 
             await AddAsync(user);
             return user;
@@ -62,7 +62,7 @@ namespace CampusTrade.API.Repositories.Implementations
         public async Task<IEnumerable<User>> GetActiveUsersAsync()
         {
             return await _dbSet
-                .Where(u => u.IsActive)
+                .Where(u => u.IsActive == 1)
                 .ToListAsync();
         }
 
@@ -107,7 +107,7 @@ namespace CampusTrade.API.Repositories.Implementations
         /// </summary>
         public async Task<int> GetActiveUserCountAsync()
         {
-            return await _dbSet.CountAsync(u => u.IsActive);
+            return await _dbSet.CountAsync(u => u.IsActive == 1);
         }
 
         /// <summary>
@@ -198,7 +198,7 @@ namespace CampusTrade.API.Repositories.Implementations
             var user = await GetByPrimaryKeyAsync(userId);
             if (user != null)
             {
-                user.IsActive = isActive;
+                user.IsActive = isActive ? 1 : 0;
                 user.UpdatedAt = DateTime.UtcNow;
                 Update(user);
             }
@@ -242,7 +242,7 @@ namespace CampusTrade.API.Repositories.Implementations
             var user = await GetByPrimaryKeyAsync(userId);
             if (user != null)
             {
-                user.IsLocked = true;
+                user.IsLocked = 1;
                 user.LockoutEnd = lockoutEnd;
                 user.UpdatedAt = DateTime.UtcNow;
                 Update(user);
@@ -257,7 +257,7 @@ namespace CampusTrade.API.Repositories.Implementations
             var user = await GetByPrimaryKeyAsync(userId);
             if (user != null)
             {
-                user.IsLocked = false;
+                user.IsLocked = 0;
                 user.LockoutEnd = null;
                 user.FailedLoginAttempts = 0;
                 user.UpdatedAt = DateTime.UtcNow;
@@ -316,7 +316,7 @@ namespace CampusTrade.API.Repositories.Implementations
             var user = await GetByPrimaryKeyAsync(userId);
             if (user != null)
             {
-                user.EmailVerified = isVerified;
+                user.EmailVerified = isVerified ? 1 : 0;
                 user.UpdatedAt = DateTime.UtcNow;
                 Update(user);
             }
@@ -344,7 +344,7 @@ namespace CampusTrade.API.Repositories.Implementations
             var user = await GetByPrimaryKeyAsync(userId);
             if (user != null)
             {
-                user.TwoFactorEnabled = enabled;
+                user.TwoFactorEnabled = enabled ? 1 : 0;
                 user.UpdatedAt = DateTime.UtcNow;
                 Update(user);
             }
@@ -460,12 +460,12 @@ namespace CampusTrade.API.Repositories.Implementations
 
             if (isActive.HasValue)
             {
-                query = query.Where(u => u.IsActive == isActive.Value);
+                query = query.Where(u => u.IsActive == (isActive.Value ? 1 : 0));
             }
 
             if (isLocked.HasValue)
             {
-                query = query.Where(u => u.IsLocked == isLocked.Value);
+                query = query.Where(u => u.IsLocked == (isLocked.Value ? 1 : 0));
             }
 
             if (registeredAfter.HasValue)

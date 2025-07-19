@@ -82,8 +82,8 @@ namespace CampusTrade.API.Models.Entities
         /// 是否启用
         /// </summary>
         [Required]
-        [Column("IS_ACTIVE", TypeName = "NUMBER(1)")]
-        public bool IsActive { get; set; } = true;
+        [Column("IS_ACTIVE")]
+        public int IsActive { get; set; } = 1;
 
         /// <summary>
         /// 创建时间

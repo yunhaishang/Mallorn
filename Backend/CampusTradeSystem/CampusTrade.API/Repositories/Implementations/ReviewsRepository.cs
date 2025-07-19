@@ -78,14 +78,14 @@ namespace CampusTrade.API.Repositories.Implementations
         /// </summary>
         public async Task<IEnumerable<Review>> GetAnonymousReviewsAsync()
         {
-            return await _context.Reviews.Include(r => r.AbstractOrder).ThenInclude(ao => ao.Order).ThenInclude(o => o.Product).Where(r => r.IsAnonymous).OrderByDescending(r => r.CreateTime).ToListAsync();
+            return await _context.Reviews.Include(r => r.AbstractOrder).ThenInclude(ao => ao.Order).ThenInclude(o => o.Product).Where(r => r.IsAnonymous == 1).OrderByDescending(r => r.CreateTime).ToListAsync();
         }
         /// <summary>
         /// 获取匿名评价数量
         /// </summary>
         public async Task<int> GetAnonymousReviewCountAsync()
         {
-            return await _context.Reviews.CountAsync(r => r.IsAnonymous);
+            return await _context.Reviews.CountAsync(r => r.IsAnonymous == 1);
         }
         /// <summary>
         /// 获取有卖家回复的评价

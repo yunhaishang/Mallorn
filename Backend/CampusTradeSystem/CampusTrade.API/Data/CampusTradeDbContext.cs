@@ -118,8 +118,6 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.IsActive)
                     .HasColumnName("IS_ACTIVE")
-                    .HasColumnType("NUMBER(1)")
-                    .HasConversion(v => v ? 1 : 0, v => v == 1)
                     .HasDefaultValue(1);
 
                 // JWT Token相关字段配置
@@ -136,8 +134,6 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.IsLocked)
                     .HasColumnName("IS_LOCKED")
-                    .HasColumnType("NUMBER(1)")
-                    .HasConversion(v => v ? 1 : 0, v => v == 1)
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.LockoutEnd)
@@ -149,8 +145,6 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.TwoFactorEnabled)
                     .HasColumnName("TWO_FACTOR_ENABLED")
-                    .HasColumnType("NUMBER(1)")
-                    .HasConversion(v => v ? 1 : 0, v => v == 1)
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.PasswordChangedAt)
@@ -163,8 +157,6 @@ namespace CampusTrade.API.Data
 
                 entity.Property(e => e.EmailVerified)
                     .HasColumnName("EMAIL_VERIFIED")
-                    .HasColumnType("NUMBER(1)")
-                    .HasConversion(v => v ? 1 : 0, v => v == 1)
                     .HasDefaultValue(0);
 
                 entity.Property(e => e.EmailVerificationToken)
@@ -501,8 +493,6 @@ namespace CampusTrade.API.Data
                 // 使用状态配置 - 默认值0
                 entity.Property(e => e.IsUsed)
                     .HasColumnName("IS_USED")
-                    .HasColumnType("NUMBER(1)")
-                    .HasConversion(v => v ? 1 : 0, v => v == 1)
                     .HasDefaultValue(0);
 
                 // 创建时间配置 - 默认当前时间
@@ -1370,9 +1360,7 @@ namespace CampusTrade.API.Data
                 // 是否启用配置 - 默认值1
                 entity.Property(e => e.IsActive)
                     .HasColumnName("IS_ACTIVE")
-                    .HasColumnType("NUMBER(1)")
                     .IsRequired()
-                    .HasConversion(v => v ? 1 : 0, v => v == 1)
                     .HasDefaultValue(1);
 
                 // 创建时间配置 - 默认当前时间
@@ -1597,8 +1585,6 @@ namespace CampusTrade.API.Data
                 // 匿名状态配置 - 默认值0
                 entity.Property(e => e.IsAnonymous)
                     .HasColumnName("IS_ANONYMOUS")
-                    .HasColumnType("NUMBER(1)")
-                    .HasConversion(v => v ? 1 : 0, v => v == 1)
                     .IsRequired()
                     .HasDefaultValue(0);
 

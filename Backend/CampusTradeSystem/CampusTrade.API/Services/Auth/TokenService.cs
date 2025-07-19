@@ -142,9 +142,9 @@ public class TokenService : ITokenService
                 StudentId = user.StudentId,
                 CreditScore = user.CreditScore,
                 DeviceId = refreshToken.DeviceId,
-                EmailVerified = user.EmailVerified,
-                TwoFactorEnabled = user.TwoFactorEnabled,
-                UserStatus = user.IsActive ? "Active" : "Inactive"
+                EmailVerified = user.EmailVerified == 1,
+                TwoFactorEnabled = user.TwoFactorEnabled == 1,
+                UserStatus = user.IsActive == 1 ? "Active" : "Inactive"
             };
 
             Log.Logger.Information("生成Token响应成功，用户ID: {UserId}", user.UserId);
@@ -254,7 +254,7 @@ public class TokenService : ITokenService
         try
         {
             // 检查用户状态
-            if (!refreshToken.User.IsActive)
+            if (refreshToken.User.IsActive == 0)
             {
                 throw new UnauthorizedAccessException("用户账户已被禁用");
             }
