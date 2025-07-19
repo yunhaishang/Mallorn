@@ -4,6 +4,7 @@ using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.API.Services.Auth;
+using CampusTrade.API.Options;
 using CampusTrade.Tests.Helpers;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
@@ -66,8 +67,7 @@ public class TokenServiceTests : IDisposable
         _tokenService = new TokenService(
             _mockUnitOfWork.Object,
             jwtOptionsWrapper,
-            _mockCache.Object,
-            _mockLogger.Object
+            _mockCache.Object
         );
     }
 

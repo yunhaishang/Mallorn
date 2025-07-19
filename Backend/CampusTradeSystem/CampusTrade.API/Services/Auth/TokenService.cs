@@ -254,7 +254,7 @@ public class TokenService : ITokenService
         try
         {
             // 检查用户状态
-            if (refreshToken.User.IsActive != 1)
+            if (refreshToken.User.IsActive == 0)
             {
                 throw new UnauthorizedAccessException("用户账户已被禁用");
             }
@@ -339,7 +339,7 @@ public class TokenService : ITokenService
 
             await _unitOfWork.SaveChangesAsync();
 
-            Log.Logger.LogInformation("撤销用户所有Token成功，用户ID: {UserId}, 数量: {Count}", userId, tokens.Count());
+            Log.Logger.Information("撤销用户所有Token成功，用户ID: {UserId}, 数量: {Count}", userId, tokens.Count());
             return tokens.Count();
         }
         catch (Exception ex)
@@ -370,7 +370,7 @@ public class TokenService : ITokenService
             var deletedCount = await _unitOfWork.RefreshTokens.CleanupExpiredTokensAsync();
             await _unitOfWork.SaveChangesAsync();
 
-            Log.Logger.LogInformation("清理过期刷新令牌成功，数量: {Count}", deletedCount);
+            Log.Logger.Information("清理过期刷新令牌成功，数量: {Count}", deletedCount);
             return deletedCount;
         }
         catch (Exception ex)
