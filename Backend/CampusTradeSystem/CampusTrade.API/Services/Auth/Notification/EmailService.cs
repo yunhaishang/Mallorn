@@ -28,11 +28,11 @@ namespace CampusTrade.API.Services.Email
             _logger = logger;
             
             // 从配置中读取SMTP服务器设置
-            _smtpServer = _configuration["Email:SmtpServer"] ?? "smtp.example.com";
+            _smtpServer = _configuration["Email:SmtpServer"] ?? "smtp.qq.com";
             _smtpPort = int.Parse(_configuration["Email:SmtpPort"] ?? "587");
             _smtpUsername = _configuration["Email:Username"] ?? "";
-            _smtpPassword = _configuration["Email:Password"] ?? "";
-            _senderEmail = _configuration["Email:SenderEmail"] ?? "noreply@campustrade.com";
+            _smtpPassword = _configuration["Email:Password"] ?? "gsqlerqxaryaefcf";
+            _senderEmail = _configuration["Email:SenderEmail"] ?? "1870707155@qq.com";
             _senderName = _configuration["Email:SenderName"] ?? "校园交易系统";
             _enableSsl = bool.Parse(_configuration["Email:EnableSsl"] ?? "true");
         }
@@ -42,7 +42,7 @@ namespace CampusTrade.API.Services.Email
         /// </summary>
         /// <param name="recipientEmail">收件人邮箱</param>
         /// <param name="subject">邮件主题</param>
-        /// <param name="body">邮件内容（HTML格式）</param>
+        /// <param name="body">邮件内容</param>
         /// <returns>发送结果</returns>
         public async Task<(bool Success, string Message)> SendEmailAsync(string recipientEmail, string subject, string body)
         {
@@ -55,10 +55,10 @@ namespace CampusTrade.API.Services.Email
             {
                 using var mailMessage = new MailMessage
                 {
-                    From = new MailAddress(_senderEmail, _senderName),
+                    From = new MailAddress(_senderEmail),
                     Subject = subject,
                     Body = body,
-                    IsBodyHtml = true
+                    IsBodyHtml = false
                 };
 
                 mailMessage.To.Add(recipientEmail);
