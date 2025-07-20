@@ -34,13 +34,13 @@ namespace CampusTrade.API.Services.File
 
             var extension = Path.GetExtension(thumbnailFileName);
             var nameWithoutExtension = Path.GetFileNameWithoutExtension(thumbnailFileName);
-            
+
             // 移除 _thumb 后缀
             if (nameWithoutExtension.EndsWith("_thumb"))
             {
                 nameWithoutExtension = nameWithoutExtension.Substring(0, nameWithoutExtension.Length - 6);
             }
-            
+
             return $"{nameWithoutExtension}{extension}";
         }
 
@@ -187,7 +187,7 @@ namespace CampusTrade.API.Services.File
 
             // 移除或替换不安全字符
             var safeChars = Regex.Replace(nameWithoutExtension, @"[^\w\-_\.]", "_");
-            
+
             // 限制长度
             if (safeChars.Length > 100)
             {

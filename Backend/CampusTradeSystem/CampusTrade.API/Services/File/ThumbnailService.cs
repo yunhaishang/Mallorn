@@ -1,10 +1,10 @@
+using System.IO;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
-using SixLabors.ImageSharp.Formats.Gif;
 using SixLabors.ImageSharp.Formats.Webp;
-using System.IO;
+using SixLabors.ImageSharp.Processing;
 
 namespace CampusTrade.API.Services.File
 {

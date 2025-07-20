@@ -1,7 +1,7 @@
-using CampusTrade.API.Services.File;
-using Microsoft.Extensions.Options;
-using Microsoft.EntityFrameworkCore;
 using System.IO;
+using CampusTrade.API.Services.File;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 
 namespace CampusTrade.API.Services.File
 {
@@ -68,14 +68,14 @@ namespace CampusTrade.API.Services.File
 
                 // 遍历所有文件类型目录
                 var directories = new[] { "products", "reports", "avatars", "others" };
-                
+
                 foreach (var dir in directories)
                 {
                     var fullPath = Path.Combine(uploadPath, dir);
                     if (!Directory.Exists(fullPath)) continue;
 
                     var files = Directory.GetFiles(fullPath);
-                    
+
                     foreach (var filePath in files)
                     {
                         var fileInfo = new FileInfo(filePath);
@@ -89,7 +89,7 @@ namespace CampusTrade.API.Services.File
 
                         // 检查文件是否在数据库中被引用
                         var isReferenced = await IsFileReferencedAsync(fileName, dbContext);
-                        
+
                         if (!isReferenced)
                         {
                             try

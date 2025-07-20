@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Authorization;
-using CampusTrade.API.Services.File;
 using CampusTrade.API.Models.DTOs;
+using CampusTrade.API.Services.File;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
 
 namespace CampusTrade.API.Controllers
 {
