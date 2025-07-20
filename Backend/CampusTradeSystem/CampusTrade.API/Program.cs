@@ -2,7 +2,6 @@ using System.Text;
 using System.Text.Encodings.Web;
 using CampusTrade.API.Data;
 using CampusTrade.API.Extensions;
-using CampusTrade.API.Infrastructure;
 using CampusTrade.API.Middleware;
 using CampusTrade.API.Options;
 using CampusTrade.API.Services.BackgroundServices;
