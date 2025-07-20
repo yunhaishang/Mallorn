@@ -89,6 +89,30 @@ namespace CampusTrade.API.Utils.Cache
         public static string UserSecurityKey(int userId)
             => BuildKey(UserPrefix, $"{userId}:security");
 
+        /// <summary>
+        /// 生成根据用户名/邮箱查询用户的缓存键
+        /// </summary>
+        public static string UserByUsernameKey(string username)
+            => BuildKey(UserPrefix, $"username:{username.ToLower()}");
+
+        /// <summary>
+        /// 生成学生验证缓存键
+        /// </summary>
+        public static string StudentValidationKey(string studentId, string name)
+            => BuildKey("student:", $"validate:{studentId}:{name.ToLower()}");
+
+        /// <summary>
+        /// 获取用户相关缓存键前缀（用于批量删除）
+        /// </summary>
+        public static string GetUserCachePrefix(int userId)
+            => BuildKey(UserPrefix, $"{userId}:");
+
+        /// <summary>
+        /// 获取学生验证缓存键前缀
+        /// </summary>
+        public static string GetStudentValidationPrefix()
+            => BuildKey("student:", "validate:");
+
         // 私有方法：统一构建键格式
         private static string BuildKey(params string[] parts)
         {
