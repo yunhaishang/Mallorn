@@ -3,6 +3,7 @@ using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.API.Services.Auth;
+using CampusTrade.API.Services.Interfaces;
 using CampusTrade.Tests.Helpers;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -24,6 +25,7 @@ public class AuthServiceTests : IDisposable
     private readonly Mock<IUnitOfWork> _mockUnitOfWork;
     private readonly Mock<IUserRepository> _mockUserRepository;
     private readonly Mock<IRepository<Student>> _mockStudentRepository;
+    private readonly Mock<IUserCacheService> _mockUserCacheService;
     private readonly AuthService _authService;
 
     public AuthServiceTests()
@@ -35,6 +37,7 @@ public class AuthServiceTests : IDisposable
         _mockUnitOfWork = new Mock<IUnitOfWork>();
         _mockUserRepository = new Mock<IUserRepository>();
         _mockStudentRepository = new Mock<IRepository<Student>>();
+        _mockUserCacheService = new Mock<IUserCacheService>();
 
         // 配置UnitOfWork与仓储的关系
         _mockUnitOfWork.Setup(u => u.Users).Returns(_mockUserRepository.Object);
@@ -47,7 +50,8 @@ public class AuthServiceTests : IDisposable
         _authService = new AuthService(
             _mockUnitOfWork.Object,
             _mockConfiguration.Object,
-            _mockTokenService.Object
+            _mockTokenService.Object,
+            _mockUserCacheService.Object
         );
     }
 
@@ -105,16 +109,42 @@ public class AuthServiceTests : IDisposable
                 return users.Any(compiled);
             });
 
-        // 2. 学生仓储模拟配置（使用通用Mock）
+        // 2. 学生仓储模拟配置
         _mockStudentRepository.Setup(r => r.FirstOrDefaultAsync(It.IsAny<Expression<Func<Student, bool>>>()))
             .ReturnsAsync((Expression<Func<Student, bool>> expr) =>
             {
-                var compiled = expr.Compile();
-                var students = new[] { validStudent, validStudent2 };
-                return students.FirstOrDefault(compiled);
+                // 简单模拟，基于学号
+                if (expr.ToString().Contains("2025001"))
+                    return validStudent;
+                if (expr.ToString().Contains("2025003"))
+                    return validStudent2;
+                return null;
             });
 
-        // 3. 通用仓储方法模拟
+        // 3. 配置通用模拟
+        _mockConfiguration.Setup(c => c["Jwt:Key"]).Returns("TestSecretKeyForJwtThatIsLongEnough123456");
+        _mockConfiguration.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
+        _mockConfiguration.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
+        _mockConfiguration.Setup(c => c["Jwt:AccessTokenExpiryMinutes"]).Returns("30");
+
+        // 4. UserCacheService模拟配置
+        // 学生身份验证缓存
+        _mockUserCacheService.Setup(c => c.ValidateStudentAsync("2025001", "张三"))
+            .ReturnsAsync(true);
+        _mockUserCacheService.Setup(c => c.ValidateStudentAsync("2025003", "王五"))
+            .ReturnsAsync(true);
+        _mockUserCacheService.Setup(c => c.ValidateStudentAsync("9999999", It.IsAny<string>()))
+            .ReturnsAsync(false);
+        _mockUserCacheService.Setup(c => c.ValidateStudentAsync(It.IsAny<string>(), "无效姓名"))
+            .ReturnsAsync(false);
+
+        // 用户名查询缓存
+        _mockUserCacheService.Setup(c => c.GetUserByUsernameAsync(activeUser.Username))
+            .ReturnsAsync(activeUser);
+        _mockUserCacheService.Setup(c => c.GetUserByUsernameAsync("nonexistent_user"))
+            .ReturnsAsync((User?)null);
+
+        // 5. 通用仓储方法模拟
         _mockUserRepository.Setup(r => r.AddAsync(It.IsAny<User>()))
             .ReturnsAsync((User u) => u); // 添加用户时返回自身
         _mockUnitOfWork.Setup(u => u.SaveChangesAsync())

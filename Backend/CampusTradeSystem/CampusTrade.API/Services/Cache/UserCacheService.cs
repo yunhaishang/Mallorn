@@ -345,5 +345,114 @@ namespace CampusTrade.API.Services.Cache
                 _permissionLock.Release();
             }
         }
+
+        /// <summary>
+        /// 根据用户名或邮箱获取用户信息（带学生信息）
+        /// </summary>
+        public async Task<User?> GetUserByUsernameAsync(string username)
+        {
+            var key = CacheKeyHelper.UserByUsernameKey(username);
+
+            try
+            {
+                return await _cache.GetOrCreateAsync(key, async () =>
+                {
+                    // 支持邮箱或用户名查找
+                    var userByEmail = await _context.Users
+                        .Include(u => u.Student)
+                        .FirstOrDefaultAsync(u => u.Email == username && u.IsActive == 1);
+
+                    if (userByEmail != null)
+                    {
+                        return userByEmail;
+                    }
+
+                    // 按用户名查找
+                    var userByUsername = await _context.Users
+                        .Include(u => u.Student)
+                        .FirstOrDefaultAsync(u => u.Username == username && u.IsActive == 1);
+
+                    return userByUsername ?? NullUser.Instance;
+                }, _options.UserCacheDuration);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "根据用户名获取用户缓存失败: {Username}", username);
+                // 降级查询
+                var userByEmail = await _context.Users
+                    .Include(u => u.Student)
+                    .FirstOrDefaultAsync(u => u.Email == username && u.IsActive == 1);
+
+                return userByEmail ?? await _context.Users
+                    .Include(u => u.Student)
+                    .FirstOrDefaultAsync(u => u.Username == username && u.IsActive == 1);
+            }
+        }
+
+        /// <summary>
+        /// 设置根据用户名/邮箱查询的用户缓存
+        /// </summary>
+        public async Task SetUserByUsernameAsync(string username, User? user)
+        {
+            var key = CacheKeyHelper.UserByUsernameKey(username);
+            await _cache.SetAsync(key, user ?? NullUser.Instance, _options.UserCacheDuration);
+            _logger.LogDebug("已设置用户名缓存: {Username}", username);
+        }
+
+        /// <summary>
+        /// 验证学生身份（学号+姓名）
+        /// </summary>
+        public async Task<bool> ValidateStudentAsync(string studentId, string name)
+        {
+            var key = CacheKeyHelper.StudentValidationKey(studentId, name);
+            try
+            {
+                return await _cache.GetOrCreateAsync(key, async () =>
+                {
+                    // 验证学生信息是否在预存的学生表中
+                    var student = await _context.Students
+                        .FirstOrDefaultAsync(s => s.StudentId == studentId && s.Name == name);
+                    return student != null;
+                }, _options.ConfigCacheDuration); // 学生验证结果使用较长的缓存时间
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "学生身份验证缓存失败: StudentId={StudentId}, Name={Name}", studentId, name);
+                // 降级查询
+                var student = await _context.Students
+                    .FirstOrDefaultAsync(s => s.StudentId == studentId && s.Name == name);
+                return student != null;
+            }
+        }
+
+        /// <summary>
+        /// 设置学生验证结果缓存
+        /// </summary>
+        public async Task SetStudentValidationAsync(string studentId, string name, bool isValid)
+        {
+            var key = CacheKeyHelper.StudentValidationKey(studentId, name);
+            await _cache.SetAsync(key, isValid, _options.ConfigCacheDuration);
+            _logger.LogDebug("已设置学生验证缓存: {StudentId}, {Name} -> {IsValid}", studentId, name, isValid);
+        }
+
+        /// <summary>
+        /// 失效用户名/邮箱查询缓存
+        /// </summary>
+        public async Task InvalidateUsernameQueryCacheAsync(string username)
+        {
+            var key = CacheKeyHelper.UserByUsernameKey(username);
+            await _cache.RemoveAsync(key);
+            _logger.LogInformation("已失效用户名查询缓存: {Username}", username);
+        }
+
+        /// <summary>
+        /// 失效学生验证缓存
+        /// </summary>
+        public async Task InvalidateStudentValidationCacheAsync(string studentId, string name)
+        {
+            var key = CacheKeyHelper.StudentValidationKey(studentId, name);
+            await _cache.RemoveAsync(key);
+            _logger.LogInformation("已失效学生验证缓存: {StudentId}, {Name}", studentId, name);
+        }
     }
 }
