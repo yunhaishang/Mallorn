@@ -1,4 +1,4 @@
-using CampusTrade.API.Services.Interface;
+using CampusTrade.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
@@ -72,7 +72,7 @@ public class CacheManagementController : ControllerBase
     public async Task<IActionResult> RemoveUserCache(int userId)
     {
         await _userCacheService.RemoveAllUserDataAsync(userId);
-        _logger.LogInformation("管理员 {User} 清除了用户 {UserId} 的缓存", 
+        _logger.LogInformation("管理员 {User} 清除了用户 {UserId} 的缓存",
             User.Identity?.Name, userId);
         return NoContent();
     }
@@ -85,7 +85,7 @@ public class CacheManagementController : ControllerBase
     public async Task<IActionResult> RemoveProductCache(int productId)
     {
         await _productCacheService.InvalidateProductCacheAsync(productId);
-        _logger.LogInformation("管理员 {User} 清除了商品 {ProductId} 的缓存", 
+        _logger.LogInformation("管理员 {User} 清除了商品 {ProductId} 的缓存",
             User.Identity?.Name, productId);
         return NoContent();
     }
@@ -120,7 +120,7 @@ public class CacheManagementController : ControllerBase
     public async Task<IActionResult> RemoveByPrefix(string prefix)
     {
         await _cacheService.RemoveByPrefixAsync(prefix);
-        _logger.LogInformation("管理员 {User} 清除了前缀为 {Prefix} 的缓存", 
+        _logger.LogInformation("管理员 {User} 清除了前缀为 {Prefix} 的缓存",
             User.Identity?.Name, prefix);
         return NoContent();
     }
@@ -135,10 +135,10 @@ public class CacheManagementController : ControllerBase
         await _configCacheService.InvalidateAllConfigsAsync();
         await _categoryCacheService.InvalidateCategoryTreeCacheAsync();
         await _productCacheService.RefreshAllActiveProductsAsync();
-        
+
         // 最后清除基础缓存
         await _cacheService.ClearAllAsync();
-        
+
         _logger.LogWarning("管理员 {User} 执行了清除所有缓存的操作", User.Identity?.Name);
         return NoContent();
     }

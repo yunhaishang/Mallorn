@@ -5,7 +5,7 @@ using CampusTrade.API.Extensions;
 using CampusTrade.API.Middleware;
 using CampusTrade.API.Options;
 using CampusTrade.API.Services.Cache;
-using CampusTrade.API.Services.Interface;
+using CampusTrade.API.Services.Interfaces;
 using CampusTrade.API.Services.BackgroundServices;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -91,6 +91,13 @@ builder.Services.AddFileManagementServices(builder.Configuration);
 
 // 配置 CORS
 builder.Services.AddCorsPolicy(builder.Configuration);
+
+// 配置缓存选项
+builder.Services.Configure<CacheOptions>(builder.Configuration.GetSection(CacheOptions.SectionName));
+
+// 注册缓存基础服务
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<ICacheService, CacheService>();
 
 // 注册后台服务
 builder.Services.AddHostedService<CacheRefreshBackgroundService>();

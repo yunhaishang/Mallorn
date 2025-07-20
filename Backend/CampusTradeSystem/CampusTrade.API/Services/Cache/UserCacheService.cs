@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using CampusTrade.API.Models.Entities;
-using CampusTrade.API.Services.Interface;
+using CampusTrade.API.Services.Interfaces;
 using CampusTrade.API.Services.Cache;
 using CampusTrade.API.Options;
 using CampusTrade.API.Utils.Cache;
@@ -159,7 +159,7 @@ namespace CampusTrade.API.Services.Cache
             // Force reload permissions on next access
             await GetPermissionsAsync(userId);
         }
-        
+
         public async Task RefreshSecurityAsync(int userId)
         {
             var key = CacheKeyHelper.UserSecurityKey(userId);
@@ -271,7 +271,7 @@ namespace CampusTrade.API.Services.Cache
             public static readonly NullUser Instance = new();
             private NullUser() { }
         }
-        
+
         // UserCacheService.cs
         public async Task InvalidateUserCacheAsync(int userId)
         {
@@ -280,7 +280,7 @@ namespace CampusTrade.API.Services.Cache
             {
                 // 1. 移除内存缓存
                 _basicUserCache.TryRemove(userId, out _);
-        
+
                 // 2. 移除分布式缓存中的各种用户数据
                 var tasks = new List<Task>
                 {
@@ -288,9 +288,9 @@ namespace CampusTrade.API.Services.Cache
                     _cache.RemoveAsync(CacheKeyHelper.UserSecurityKey(userId)),
                     _cache.RemoveAsync(CacheKeyHelper.UserPermissionsKey(userId))
                 };
-        
+
                 await Task.WhenAll(tasks);
-        
+
                 _logger.LogInformation("已失效用户 {UserId} 的所有缓存数据", userId);
             }
             catch (Exception ex)
@@ -307,7 +307,7 @@ namespace CampusTrade.API.Services.Cache
         public async Task InvalidateUsersCacheAsync(IEnumerable<int> userIds)
         {
             // 批量失效，减少锁竞争
-            var tasks = userIds.Select(async userId => 
+            var tasks = userIds.Select(async userId =>
             {
                 await InvalidateUserCacheAsync(userId);
                 _logger.LogInformation("已失效用户 {UserId} 的缓存", userId);

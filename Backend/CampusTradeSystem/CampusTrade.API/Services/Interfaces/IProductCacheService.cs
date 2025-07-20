@@ -2,7 +2,7 @@ using CampusTrade.API.Models.Entities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace CampusTrade.API.Services.Interface
+namespace CampusTrade.API.Services.Interfaces
 {
     /// <summary>
     /// 商品缓存服务接口

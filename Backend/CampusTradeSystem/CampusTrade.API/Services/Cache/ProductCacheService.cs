@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using CampusTrade.API.Models.Entities;
-using CampusTrade.API.Services.Interface;
+using CampusTrade.API.Services.Interfaces;
 using CampusTrade.API.Services.Cache;
 using CampusTrade.API.Options;
 using CampusTrade.API.Utils.Cache;
@@ -193,7 +193,7 @@ namespace CampusTrade.API.Services.Cache
                         .Take(pageSize)
                         .Include(p => p.ProductImages)
                         .ToListAsync();
-                },  _options.ProductCacheDuration); // 用户产品列表缓存时间
+                }, _options.ProductCacheDuration); // 用户产品列表缓存时间
 
                 return result ?? new List<Product>(); // 确保不返回null
             }
@@ -363,4 +363,4 @@ namespace CampusTrade.API.Services.Cache
     }
     // ProductCacheService.cs
 
- }
+}

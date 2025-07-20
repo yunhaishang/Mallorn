@@ -1,7 +1,8 @@
 using CampusTrade.API.Options;
 using Microsoft.Extensions.Options;
 
-namespace CampusTrade.API.Services.Interface{
+namespace CampusTrade.API.Services.Interfaces
+{
 
   /// <summary>
   /// 系统配置缓存服务接口
@@ -58,12 +59,12 @@ namespace CampusTrade.API.Services.Interface{
     /// 失效全部系统配置缓存
     /// </summary>
     Task InvalidateAllConfigsAsync();
-  
+
     /// <summary>
     /// 刷新JWT配置缓存
     /// </summary>
     Task RefreshJwtOptionsAsync();
-    
+
     /// <summary>
     /// 刷新缓存配置
     /// </summary>

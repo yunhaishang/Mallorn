@@ -1,10 +1,11 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CampusTrade.API.Services.Cache;
-using CampusTrade.API.Services.Interface;
+using CampusTrade.API.Services.Interfaces;
 using CampusTrade.API.Options;
 
 namespace CampusTrade.API.Services.BackgroundServices
@@ -17,20 +18,18 @@ namespace CampusTrade.API.Services.BackgroundServices
     {
         private readonly ILogger<CacheRefreshBackgroundService> _logger;
         private readonly IServiceProvider _serviceProvider;
-
-        private readonly  CacheOptions _options;
-        
+        private readonly CacheOptions _options;
 
         public CacheRefreshBackgroundService(
             ILogger<CacheRefreshBackgroundService> logger,
-            CacheOptions options,
+            IOptions<CacheOptions> options,
             IServiceProvider serviceProvider)
         {
             _logger = logger;
-            _options = options;
+            _options = options.Value;
             _serviceProvider = serviceProvider;
         }
-        
+
         /// <summary>
         /// 刷新各部分缓存
         /// </summary>
@@ -38,8 +37,16 @@ namespace CampusTrade.API.Services.BackgroundServices
         {
             _logger.LogInformation("Cache Refresh Service is starting with initial delay of {InitialDelay}", _options.InitialDelaySeconds);
 
-            // 初始延迟
-            await Task.Delay(_options.InitialDelaySeconds, stoppingToken);
+            try
+            {
+                // 初始延迟
+                await Task.Delay(_options.InitialDelaySeconds, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogInformation("Cache Refresh Service was cancelled during initial delay");
+                return;
+            }
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -73,15 +80,29 @@ namespace CampusTrade.API.Services.BackgroundServices
 
                     _logger.LogInformation("Cache refresh cycle completed at: {Time}", DateTimeOffset.Now);
                 }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Cache refresh cycle was cancelled");
+                    break;
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error occurred during cache refresh");
                 }
 
-                await Task.Delay(_options.InitialDelaySeconds, stoppingToken);
+                try
+                {
+                    // 使用配置的间隔时间
+                    await Task.Delay(_options.IntervalMinutes, stoppingToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInformation("Cache Refresh Service was cancelled during interval delay");
+                    break;
+                }
             }
         }
-        
+
         /// <summary>
         /// 停止缓存功能
         /// </summary>

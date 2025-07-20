@@ -1,7 +1,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace CampusTrade.API.Services.Interface
+namespace CampusTrade.API.Services.Interfaces
 {
     /// <summary>
     /// 内存缓存服务接口
@@ -63,12 +63,12 @@ namespace CampusTrade.API.Services.Interface
         /// 获取缓存命中率
         /// </summary>
         Task<Dictionary<string, DateTime?>> GetExpirationInfo(params string[] keys);
-        
+
         /// <summary>
         /// 失效all缓存
         /// </summary>
         Task RemoveAllAsync(IEnumerable<string> keys);
- 
+
         /// <summary>
         /// 前缀获得缓存内容
         /// </summary>

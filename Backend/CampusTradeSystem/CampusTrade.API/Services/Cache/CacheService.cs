@@ -5,7 +5,11 @@ using System.Collections;
 using System.Reflection;
 using System.Threading.Tasks;
 using CampusTrade.API.Options;
-using CampusTrade.API.Services.Interface;
+using CampusTrade.API.Services.Interfaces;
+using Microsoft.Extensions.Logging; // Added for ILogger
+using System.Collections.Generic; // Added for Dictionary
+using System.Linq; // Added for Where
+using System.Threading; // Added for Interlocked
 
 namespace CampusTrade.API.Services.Cache
 {
@@ -35,7 +39,7 @@ namespace CampusTrade.API.Services.Cache
         public async Task<T?> GetOrCreateAsync<T>(string key, Func<Task<T>> factory, TimeSpan? expiration = null)
         {
             var actualExpiration = expiration ?? _options.DefaultCacheDuration;
-    
+
             Interlocked.Increment(ref _totalRequests);
             if (_memoryCache.TryGetValue(key, out T? cachedValue))
             {
@@ -43,20 +47,28 @@ namespace CampusTrade.API.Services.Cache
                 return cachedValue;
             }
 
-            var result = await factory().ConfigureAwait(false);
-    
-            // 空结果使用独立配置时间
-            var finalExpiration = result == null ? _options.NullResultCacheDuration : actualExpiration;
-            await SetAsync(key, result, finalExpiration);
-    
-            return result;
+            try
+            {
+                var result = await factory().ConfigureAwait(false);
+
+                // 空结果使用独立配置时间
+                var finalExpiration = result == null ? _options.NullResultCacheDuration : actualExpiration;
+                await SetAsync(key, result, finalExpiration);
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to create cache value for key: {Key}", key);
+                throw; // 重新抛出异常，让调用者处理
+            }
         }
 
         public Task<T?> GetAsync<T>(string key)
         {
             Interlocked.Increment(ref _totalRequests);
 
-             if (_memoryCache.TryGetValue(key, out T? value))
+            if (_memoryCache.TryGetValue(key, out T? value))
             {
                 Interlocked.Increment(ref _hits);
                 return Task.FromResult<T?>(value);
@@ -78,7 +90,7 @@ namespace CampusTrade.API.Services.Cache
                 }
                 Interlocked.Increment(ref _totalRequests);
             }
-             return Task.FromResult(result);
+            return Task.FromResult(result);
         }
 
         public Task SetAsync<T>(string key, T value, TimeSpan? expiration = null)
@@ -122,41 +134,62 @@ namespace CampusTrade.API.Services.Cache
         {
             var result = new Dictionary<string, DateTime?>();
 
-            if (_memoryCache is MemoryCache memoryCache)
+            try
             {
-                // 通过反射获取 MemoryCache 的私有条目集合
-                var entriesField = typeof(MemoryCache).GetField("_entries", BindingFlags.NonPublic | BindingFlags.Instance);
-                if (entriesField?.GetValue(memoryCache) is IDictionary cacheEntries)
+                if (_memoryCache is MemoryCache memoryCache)
                 {
-                    foreach (var key in keys)
+                    // 通过反射获取 MemoryCache 的私有条目集合
+                    var entriesField = typeof(MemoryCache).GetField("_entries", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (entriesField?.GetValue(memoryCache) is IDictionary cacheEntries)
                     {
-                        if (cacheEntries.Contains(key))
+                        foreach (var key in keys)
                         {
-                            // 获取缓存条目并提取过期时间
-                            var entry = cacheEntries[key];
-                            var expirationField = entry?.GetType().GetProperty("AbsoluteExpiration");
-                            var expirationValue = expirationField?.GetValue(entry);
+                            try
+                            {
+                                if (cacheEntries.Contains(key))
+                                {
+                                    // 获取缓存条目并提取过期时间
+                                    var entry = cacheEntries[key];
+                                    var expirationField = entry?.GetType().GetProperty("AbsoluteExpiration");
+                                    var expirationValue = expirationField?.GetValue(entry);
 
-                            if (expirationValue is DateTimeOffset offset)
-                            {
-                                result[key] = offset.LocalDateTime;
+                                    if (expirationValue is DateTimeOffset offset)
+                                    {
+                                        result[key] = offset.LocalDateTime;
+                                    }
+                                    else if (expirationValue is DateTime time)
+                                    {
+                                        result[key] = time;
+                                    }
+                                    else
+                                    {
+                                        result[key] = null; // 无过期时间（永不过期）
+                                    }
+                                }
+                                else
+                                {
+                                    result[key] = null; // 键不存在
+                                }
                             }
-                            else if (expirationValue is DateTime time)
+                            catch (Exception ex)
                             {
-                                result[key] = time;
+                                _logger.LogWarning(ex, "Failed to get expiration info for key: {Key}", key);
+                                result[key] = null; // 出错时返回null
                             }
-                            else
-                            {
-                                result[key] = null; // 无过期时间（永不过期）
-                            }
-                        }
-                        else
-                        {
-                            result[key] = null; // 键不存在
                         }
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to access MemoryCache entries via reflection");
+                // 如果反射失败，为所有键返回null
+                foreach (var key in keys)
+                {
+                    result[key] = null;
+                }
+            }
+
             return Task.FromResult(result);
         }
 
@@ -198,15 +231,15 @@ namespace CampusTrade.API.Services.Cache
         public Task<IEnumerable<string>> GetKeysByPrefixAsync(string prefix)
         {
             var keys = new List<string>();
-    
+
             if (_memoryCache is MemoryCache memoryCache)
-            { 
-            // 使用我们已有的 MemoryCacheExtensions
-            keys = memoryCache.GetKeys<string>()
-            .Where(k => k.StartsWith(prefix))
-            .ToList();
+            {
+                // 使用我们已有的 MemoryCacheExtensions
+                keys = memoryCache.GetKeys<string>()
+                .Where(k => k.StartsWith(prefix))
+                .ToList();
             }
-    
+
             return Task.FromResult<IEnumerable<string>>(keys);
         }
     }

@@ -1,6 +1,6 @@
 using CampusTrade.API.Options;
 using CampusTrade.API.Utils.Cache;
-using CampusTrade.API.Services.Interface;
+using CampusTrade.API.Services.Interfaces;
 using Microsoft.Extensions.Options;
 using System.Text.Json;
 
@@ -123,7 +123,7 @@ public class SystemConfigCacheService : ISystemConfigCacheService
 
         _logger.LogInformation("所有系统配置缓存已失效");
     }
-    
+
     public async Task RefreshJwtOptionsAsync()
     {
         // 立即重新加载并缓存

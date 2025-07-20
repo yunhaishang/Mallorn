@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using CampusTrade.API.Models.Entities;
-using CampusTrade.API.Services.Interface;
+using CampusTrade.API.Services.Interfaces;
 using CampusTrade.API.Services.Cache;
 using CampusTrade.API.Data;
 using CampusTrade.API.Utils.Cache;
@@ -16,7 +16,7 @@ namespace CampusTrade.API.Services.Cache
     {
         private readonly ICacheService _cache;
         private readonly CampusTradeDbContext _context;
-        private readonly  CacheOptions _options;
+        private readonly CacheOptions _options;
         private readonly ILogger<CategoryCacheService> _logger;
         private readonly SemaphoreSlim _treeLock = new(1, 1);
 
@@ -32,10 +32,10 @@ namespace CampusTrade.API.Services.Cache
             _logger = logger;
         }
 
-public async Task<List<Category>> GetCategoryTreeAsync()
-{
-    var key = CacheKeyHelper.CategoryTreeKey();
-    await _treeLock.WaitAsync();
+        public async Task<List<Category>> GetCategoryTreeAsync()
+        {
+            var key = CacheKeyHelper.CategoryTreeKey();
+            await _treeLock.WaitAsync();
             try
             {
                 var result = await _cache.GetOrCreateAsync(key, async () =>
@@ -45,14 +45,14 @@ public async Task<List<Category>> GetCategoryTreeAsync()
                         .ToListAsync();
                     return BuildCategoryTree(flatCategories, parentId: null);
                 }, _options.CategoryCacheDuration); // 使用配置值
-                
+
                 return result ?? new List<Category>();
             }
             finally
             {
                 _treeLock.Release();
             }
-}
+        }
 
         public async Task RefreshCategoryTreeAsync()
         {
@@ -68,7 +68,7 @@ public async Task<List<Category>> GetCategoryTreeAsync()
                 _treeLock.Release();
             }
         }
-        
+
         public async Task InvalidateCategoryTreeCacheAsync()
         {
             await _treeLock.WaitAsync();
