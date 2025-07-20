@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using CampusTrade.API.Data;
 using CampusTrade.API.Extensions;
+using CampusTrade.API.Infrastructure;
 using CampusTrade.API.Middleware;
 using CampusTrade.API.Options;
 using CampusTrade.API.Services.Cache;
@@ -11,10 +12,25 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 
 
 // 设置控制台编码为UTF-8，确保中文字符正确显示
 Console.OutputEncoding = Encoding.UTF8;
+
+// 配置 Serilog 日志系统
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .WriteTo.Console()
+    .WriteTo.File(Environment.GetEnvironmentVariable("LOG_PATH") ?? "logs/performance/perf-.log",
+        rollingInterval: RollingInterval.Day)
+    .WriteTo.File(Environment.GetEnvironmentVariable("ERROR_LOG_PATH") ?? "logs/errors/error-.log",
+        rollingInterval: RollingInterval.Day,
+        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Error)
+    .WriteTo.File(Environment.GetEnvironmentVariable("BUSINESS_LOG_PATH") ?? "logs/business/business-.log",
+        rollingInterval: RollingInterval.Day)
+    .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -76,9 +92,23 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
-// 添加 Oracle 数据库连接
+// 注册数据库性能拦截器
+builder.Services.AddScoped<DatabasePerformanceInterceptor>();
+
+// 添加 Oracle 数据库连接以及拦截器
 builder.Services.AddDbContext<CampusTradeDbContext>(options =>
-    options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    var interceptor = builder.Services.BuildServiceProvider()
+        .GetRequiredService<DatabasePerformanceInterceptor>();
+    options.UseOracle(builder.Configuration.GetConnectionString("DefaultConnection"))
+           .AddInterceptors(interceptor);
+});
+
+// 添加Repository层服务
+builder.Services.AddRepositoryServices();
+
+// 添加日志清理后台服务
+builder.Services.AddHostedService<CampusTrade.API.Services.LogCleanupService>();
 
 // 添加JWT认证和Token服务
 builder.Services.AddJwtAuthentication(builder.Configuration);
@@ -185,8 +215,13 @@ else
 // 使用全局异常处理中间件
 app.UseGlobalExceptionHandler();
 
+// 使用安全头中间件
+app.UseSecurityHeaders();
+
 // 使用安全检查中间件
 app.UseSecurity();
+
+app.UseMiddleware<PerformanceMiddleware>();
 
 // 启用静态文件访问（用于文件下载和预览）
 app.UseStaticFiles();
