@@ -4,9 +4,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using CampusTrade.API.Hubs;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Data;
+using CampusTrade.API.Services.Email;
 
 namespace CampusTrade.API.Services.Auth
 {
@@ -17,11 +19,19 @@ namespace CampusTrade.API.Services.Auth
     {
         private readonly IHubContext<NotificationHub> _hubContext;
         private readonly CampusTradeDbContext _context;
+        private readonly EmailService _emailService;
+        private readonly ILogger<NotifiSenderService> _logger;
 
-        public NotifiSenderService(IHubContext<NotificationHub> hubContext, CampusTradeDbContext context)
+        public NotifiSenderService(
+            IHubContext<NotificationHub> hubContext, 
+            CampusTradeDbContext context,
+            EmailService emailService,
+            ILogger<NotifiSenderService> logger)
         {
             _hubContext = hubContext;
             _context = context;
+            _emailService = emailService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -63,17 +73,59 @@ namespace CampusTrade.API.Services.Auth
                     return (false, errorMsg);
                 }
 
-                // 通过SignalR发送消息
+                // 1. 通过SignalR发送消息到前端
                 var pushSuccess = await PushNotificationToUser(
                     notification.RecipientId,
                     notification.Template.TemplateName,
                     content
                 );
+                
+                // 2. 发送邮件通知（如果用户有有效邮箱）
+                var emailSuccess = false;
+                var emailResultMsg = string.Empty;
+                
+                if (!string.IsNullOrEmpty(notification.Recipient.Email))
+                {
+                    var emailResult = await _emailService.SendEmailAsync(
+                        notification.Recipient.Email,
+                        notification.Template.TemplateName, // 邮件主题使用模板名称
+                        content // 邮件内容使用渲染后的通知内容
+                    );
+                    
+                    emailSuccess = emailResult.Success;
+                    emailResultMsg = emailResult.Message;
+                    
+                    _logger.LogInformation($"邮件通知结果 - NotificationId: {notificationId}, " +
+                                           $"收件人: {notification.Recipient.Email}, " +
+                                           $"结果: {(emailSuccess ? "成功" : "失败")}, " +
+                                           $"消息: {emailResultMsg}");
+                }
+                else 
+                {
+                    _logger.LogWarning($"用户 {notification.RecipientId} 没有设置邮箱，跳过邮件通知");
+                }
+                
+                // 3. 只要有一种方式发送成功，就认为通知发送成功
+                var isSuccess = pushSuccess || emailSuccess;
+                var resultMessage = isSuccess ? "通知发送成功" : "通知发送失败";
+                
+                if (pushSuccess && emailSuccess)
+                {
+                    resultMessage = "Web端和邮箱通知均发送成功";
+                }
+                else if (pushSuccess)
+                {
+                    resultMessage = "Web端通知发送成功，邮箱通知失败或未发送";
+                }
+                else if (emailSuccess)
+                {
+                    resultMessage = "邮箱通知发送成功，Web端通知失败";
+                }
 
                 // 更新通知状态
-                await UpdateNotificationStatus(notificationId, pushSuccess, pushSuccess ? null : "SignalR推送失败");
+                await UpdateNotificationStatus(notificationId, isSuccess, isSuccess ? null : "通知发送失败");
 
-                return (pushSuccess, pushSuccess ? "发送成功" : "SignalR推送失败");
+                return (isSuccess, resultMessage);
             }
             catch (Exception ex)
             {

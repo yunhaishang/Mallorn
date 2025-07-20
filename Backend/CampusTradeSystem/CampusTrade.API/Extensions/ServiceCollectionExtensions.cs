@@ -123,6 +123,9 @@ public static class ServiceCollectionExtensions
         // 注册通知服务
         services.AddScoped<Services.Auth.NotifiService>();
         services.AddScoped<Services.Auth.NotifiSenderService>();
+        
+        // 注册邮件服务
+        services.AddScoped<Services.Email.EmailService>();
 
         // 添加内存缓存（用于Token黑名单）
         services.AddMemoryCache();
