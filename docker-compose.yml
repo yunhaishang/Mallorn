@@ -35,6 +35,9 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Data Source=oracle-db:1521/XEPDB1;User Id=CAMPUS_TRADE_USER;Password=CampusTrade123!;
+    volumes:
+      - ./Storage:/Storage
+      - ./Logs:/app/logs
     restart: unless-stopped
 
   campus-trade-web:
