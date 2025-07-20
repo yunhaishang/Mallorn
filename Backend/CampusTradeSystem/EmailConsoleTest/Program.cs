@@ -1,7 +1,6 @@
 // See https://aka.ms/new-console-template for more information
 // Console.WriteLine("Hello, World!");
-//此处只是单纯展示一下能够正确发送的代码
-
+//此处只是单纯展示一下能够正确发送的代码，emailservice中完全按照该代码进行书写
 using System;
 using System.Net;
 using System.Net.Mail;
