@@ -1,12 +1,12 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CampusTrade.API.Options;
 using CampusTrade.API.Services.Cache;
 using CampusTrade.API.Services.Interfaces;
-using CampusTrade.API.Options;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace CampusTrade.API.Services.BackgroundServices
 {

@@ -146,7 +146,7 @@ namespace CampusTrade.API.Utils.Cache
             // 使用私有BuildKey方法（通过方法内联访问）
             return BuildKey(sb.ToString());
         }
-        
+
         /// <summary>
         /// 获取所有配置缓存键的完整前缀
         /// </summary>
@@ -167,10 +167,10 @@ namespace CampusTrade.API.Utils.Cache
         /// 从完整缓存键中提取原始配置名
         /// </summary>
         public static bool TryExtractConfigName(string cacheKey, out string? configName)
-        { 
-            configName = null;  
+        {
+            configName = null;
             if (!IsConfigKey(cacheKey)) return false;
-    
+
             var prefix = GetConfigKeysPrefix();
             configName = cacheKey[prefix.Length..]; // 去掉前缀部分
             return true;

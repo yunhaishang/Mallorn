@@ -43,7 +43,7 @@ namespace CampusTrade.API.Options
         /// 空结果缓存持续时间（防穿透）
         /// </summary>
         public TimeSpan NullResultCacheDuration { get; set; } = TimeSpan.FromMinutes(5);
-        
+
         /// <summary>
         /// 定时刷新间隔时间
         /// </summary>

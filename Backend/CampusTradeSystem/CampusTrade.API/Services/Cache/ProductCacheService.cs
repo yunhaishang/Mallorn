@@ -1,17 +1,17 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
-using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Logging;
-using Microsoft.EntityFrameworkCore;
-using CampusTrade.API.Models.Entities;
-using CampusTrade.API.Services.Interfaces;
-using CampusTrade.API.Services.Cache;
-using CampusTrade.API.Options;
-using CampusTrade.API.Utils.Cache;
+using System.Threading.Tasks;
 using CampusTrade.API.Data;
+using CampusTrade.API.Models.Entities;
+using CampusTrade.API.Options;
+using CampusTrade.API.Services.Cache;
+using CampusTrade.API.Services.Interfaces;
+using CampusTrade.API.Utils.Cache;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace CampusTrade.API.Services.Cache
 {
