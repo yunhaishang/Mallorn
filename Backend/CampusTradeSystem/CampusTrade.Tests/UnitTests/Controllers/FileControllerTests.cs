@@ -1,11 +1,11 @@
+using System.IO;
+using System.Text;
 using CampusTrade.API.Controllers;
 using CampusTrade.API.Services.File;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
-using System.IO;
-using System.Text;
 using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Controllers
@@ -204,7 +204,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             // Arrange
             var fileName = "test.jpg";
             var fileInfo = new FileInfo(Path.Combine(Path.GetTempPath(), fileName));
-            
+
             _mockFileService.Setup(x => x.GetFileInfoAsync(fileName))
                 .ReturnsAsync(fileInfo);
 
@@ -298,7 +298,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
         {
             // Arrange
             var fileNames = new List<string> { "test1.jpg", "test2.png", "test3.pdf" };
-            
+
             _mockFileService.Setup(x => x.DeleteFileAsync("test1.jpg"))
                 .ReturnsAsync(true);
             _mockFileService.Setup(x => x.DeleteFileAsync("test2.png"))
@@ -312,7 +312,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
-            
+
             // 验证调用次数
             _mockFileService.Verify(x => x.DeleteFileAsync(It.IsAny<string>()), Times.Exactly(3));
         }
@@ -322,7 +322,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
         {
             // Arrange
             var fileNames = new List<string> { "existing.jpg", "nonexistent.png" };
-            
+
             _mockFileService.Setup(x => x.DeleteFileAsync("existing.jpg"))
                 .ReturnsAsync(true);
             _mockFileService.Setup(x => x.DeleteFileAsync("nonexistent.png"))
@@ -334,7 +334,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
-            
+
             // 验证返回的数据结构
             var response = okResult.Value;
             var successProperty = response?.GetType().GetProperty("success");
@@ -348,7 +348,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             Assert.NotNull(totalCountProperty);
             Assert.NotNull(successCountProperty);
             Assert.NotNull(failedCountProperty);
-            
+
             Assert.True((bool)successProperty.GetValue(response)!);
             Assert.Equal(2, (int)totalCountProperty.GetValue(response)!);
             Assert.Equal(1, (int)successCountProperty.GetValue(response)!);
@@ -385,7 +385,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
         {
             // Arrange
             var fileNames = new List<string> { "error.jpg", "normal.png" };
-            
+
             _mockFileService.Setup(x => x.DeleteFileAsync("error.jpg"))
                 .ThrowsAsync(new Exception("文件删除异常"));
             _mockFileService.Setup(x => x.DeleteFileAsync("normal.png"))
@@ -397,11 +397,11 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
-            
+
             var response = okResult.Value;
             var successCountProperty = response?.GetType().GetProperty("successCount");
             var failedCountProperty = response?.GetType().GetProperty("failedCount");
-            
+
             Assert.Equal(1, (int)successCountProperty!.GetValue(response)!);
             Assert.Equal(1, (int)failedCountProperty!.GetValue(response)!);
         }
@@ -430,7 +430,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
-            
+
             // 验证调用次数
             _mockFileService.Verify(x => x.DeleteFileByUrlAsync(It.IsAny<string>()), Times.Exactly(2));
             _mockFileService.Verify(x => x.ExtractFileNameFromUrl(It.IsAny<string>()), Times.Exactly(2));
@@ -462,7 +462,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
-            
+
             // 验证返回的数据结构
             var response = okResult.Value;
             var successProperty = response?.GetType().GetProperty("success");
@@ -476,7 +476,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             Assert.NotNull(totalCountProperty);
             Assert.NotNull(successCountProperty);
             Assert.NotNull(failedCountProperty);
-            
+
             Assert.True((bool)successProperty.GetValue(response)!);
             Assert.Equal(2, (int)totalCountProperty.GetValue(response)!);
             Assert.Equal(1, (int)successCountProperty.GetValue(response)!);
@@ -543,11 +543,11 @@ namespace CampusTrade.Tests.UnitTests.Controllers
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             Assert.NotNull(okResult.Value);
-            
+
             var response = okResult.Value;
             var successCountProperty = response?.GetType().GetProperty("successCount");
             var failedCountProperty = response?.GetType().GetProperty("failedCount");
-            
+
             Assert.Equal(1, (int)successCountProperty!.GetValue(response)!);
             Assert.Equal(1, (int)failedCountProperty!.GetValue(response)!);
         }
@@ -556,13 +556,13 @@ namespace CampusTrade.Tests.UnitTests.Controllers
         {
             var mockFile = new Mock<IFormFile>();
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            
+
             mockFile.Setup(f => f.FileName).Returns(fileName);
             mockFile.Setup(f => f.ContentType).Returns(contentType);
             mockFile.Setup(f => f.Length).Returns(stream.Length);
             mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
             mockFile.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns((Stream target, CancellationToken token) => 
+                .Returns((Stream target, CancellationToken token) =>
                 {
                     stream.Position = 0;
                     return stream.CopyToAsync(target, token);

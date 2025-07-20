@@ -1,10 +1,10 @@
+using System.IO;
+using System.Text;
 using CampusTrade.API.Services.File;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
-using System.IO;
-using System.Text;
 using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Services
@@ -24,7 +24,7 @@ namespace CampusTrade.Tests.UnitTests.Services
         {
             _mockLogger = new Mock<ILogger<FileService>>();
             _mockThumbnailService = new Mock<IThumbnailService>();
-            
+
             _testUploadPath = Path.Combine(Path.GetTempPath(), "file-service-tests");
             _options = new FileStorageOptions
             {
@@ -645,13 +645,13 @@ namespace CampusTrade.Tests.UnitTests.Services
         {
             var mockFile = new Mock<IFormFile>();
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(content));
-            
+
             mockFile.Setup(f => f.FileName).Returns(fileName);
             mockFile.Setup(f => f.ContentType).Returns(contentType);
             mockFile.Setup(f => f.Length).Returns(stream.Length);
             mockFile.Setup(f => f.OpenReadStream()).Returns(stream);
             mockFile.Setup(f => f.CopyToAsync(It.IsAny<Stream>(), default))
-                .Returns((Stream target, CancellationToken token) => 
+                .Returns((Stream target, CancellationToken token) =>
                 {
                     stream.Position = 0;
                     return stream.CopyToAsync(target, token);
@@ -748,8 +748,8 @@ namespace CampusTrade.Tests.UnitTests.Services
         public async Task DeleteFilesByUrl_WithMultipleUrls_ShouldDeleteAllFiles()
         {
             // Arrange
-            var fileUrls = new List<string> 
-            { 
+            var fileUrls = new List<string>
+            {
                 "http://localhost:5085/api/file/files/products/test1.jpg",
                 "http://localhost:5085/api/file/files/avatars/test2.png",
                 "http://localhost:5085/api/file/files/reports/test3.pdf"
@@ -768,7 +768,7 @@ namespace CampusTrade.Tests.UnitTests.Services
                     FileType.ReportEvidence => "reports",
                     _ => "others"
                 };
-                
+
                 var filePath = Path.Combine(_testUploadPath, folder, fileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
                 await File.WriteAllTextAsync(filePath, "test content");
@@ -792,8 +792,8 @@ namespace CampusTrade.Tests.UnitTests.Services
         public async Task DeleteFilesByUrl_WithNonExistentUrls_ShouldReturnFalse()
         {
             // Arrange
-            var fileUrls = new List<string> 
-            { 
+            var fileUrls = new List<string>
+            {
                 "http://localhost:5085/api/file/files/products/nonexistent1.jpg",
                 "http://localhost:5085/api/file/files/avatars/nonexistent2.png"
             };
@@ -814,8 +814,8 @@ namespace CampusTrade.Tests.UnitTests.Services
         public async Task DeleteFilesByUrl_WithInvalidUrls_ShouldReturnFalse()
         {
             // Arrange
-            var invalidUrls = new List<string> 
-            { 
+            var invalidUrls = new List<string>
+            {
                 "invalid-url",
                 "",
                 "http://localhost:5085/api/file/invalid-path/test.jpg"
@@ -844,7 +844,7 @@ namespace CampusTrade.Tests.UnitTests.Services
             // 创建原始文件和缩略图
             var originalFilePath = Path.Combine(_testUploadPath, "products", originalFileName);
             var thumbnailFilePath = Path.Combine(_testUploadPath, "products", thumbnailFileName);
-            
+
             Directory.CreateDirectory(Path.GetDirectoryName(originalFilePath)!);
             await File.WriteAllTextAsync(originalFilePath, "original content");
             await File.WriteAllTextAsync(thumbnailFilePath, "thumbnail content");
@@ -901,8 +901,8 @@ namespace CampusTrade.Tests.UnitTests.Services
             // Assert
             Assert.NotNull(result);
             Assert.True(result.Success);
-            Assert.All(result.Files, file => 
-                Assert.False(file.FileName.Contains("_thumb"), 
+            Assert.All(result.Files, file =>
+                Assert.False(file.FileName.Contains("_thumb"),
                     $"Main file list should not contain thumbnail files, but found: {file.FileName}"));
         }
 
@@ -915,7 +915,7 @@ namespace CampusTrade.Tests.UnitTests.Services
             // Assert
             Assert.NotNull(result);
             Assert.True(result.Success);
-            
+
             foreach (var file in result.Files)
             {
                 Assert.NotEmpty(file.FileName);
