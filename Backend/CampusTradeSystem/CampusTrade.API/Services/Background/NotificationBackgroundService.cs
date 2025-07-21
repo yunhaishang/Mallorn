@@ -1,10 +1,10 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using CampusTrade.API.Services.Auth;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using CampusTrade.API.Services.Auth;
 
 namespace CampusTrade.API.Services.Background
 {
@@ -17,7 +17,7 @@ namespace CampusTrade.API.Services.Background
         private readonly ILogger<NotificationBackgroundService> _logger;
         private readonly TimeSpan _processingInterval = TimeSpan.FromSeconds(10); // 每10秒检查一次
         private readonly TimeSpan _retryInterval = TimeSpan.FromMinutes(5); // 每5分钟重试一次失败的通知
-        
+
         // 新增：用于立即触发处理的信号量
         private readonly SemaphoreSlim _processingSignal = new SemaphoreSlim(0);
         private static NotificationBackgroundService? _instance;
@@ -52,7 +52,7 @@ namespace CampusTrade.API.Services.Background
 
                     // 1. 处理待发送通知
                     var (totalPending, successPending, failedPending) = await senderService.ProcessNotificationQueueAsync(20);
-                    
+
                     if (totalPending > 0)
                     {
                         _logger.LogInformation($"处理待发送通知: 总计{totalPending}条, 成功{successPending}条, 失败{failedPending}条");
@@ -62,7 +62,7 @@ namespace CampusTrade.API.Services.Background
                     if (DateTime.Now.Second < 10) // 大约每分钟的前10秒执行重试
                     {
                         var (totalRetry, successRetry, failedRetry) = await senderService.RetryFailedNotificationsAsync(10);
-                        
+
                         if (totalRetry > 0)
                         {
                             _logger.LogInformation($"重试失败通知: 总计{totalRetry}条, 成功{successRetry}条, 失败{failedRetry}条");
@@ -84,7 +84,7 @@ namespace CampusTrade.API.Services.Background
                 // 等待下一次执行：要么等待10秒，要么等待外部触发信号
                 using var cts = CancellationTokenSource.CreateLinkedTokenSource(stoppingToken);
                 cts.CancelAfter(_processingInterval);
-                
+
                 try
                 {
                     await _processingSignal.WaitAsync(cts.Token);

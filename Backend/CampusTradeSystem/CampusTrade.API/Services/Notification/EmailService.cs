@@ -1,7 +1,7 @@
 using System;
-using System.Threading.Tasks;
 using System.Net;
 using System.Net.Mail;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -26,33 +26,33 @@ namespace CampusTrade.API.Services.Email
         {
             _configuration = configuration;
             _logger = logger;
-            
+
             // 从配置中读取SMTP服务器设置
             _smtpServer = _configuration["Email:SmtpServer"];
             if (string.IsNullOrEmpty(_smtpServer))
             {
                 throw new InvalidOperationException("未配置Email:SmtpServer，请检查appsettings.json配置");
             }
-            
+
             _smtpPort = int.Parse(_configuration["Email:SmtpPort"] ?? "587");
             _smtpUsername = _configuration["Email:Username"];
             if (string.IsNullOrEmpty(_smtpUsername))
             {
                 throw new InvalidOperationException("未配置Email:Username，请检查appsettings.json配置");
             }
-            
+
             _smtpPassword = _configuration["Email:Password"];
             if (string.IsNullOrEmpty(_smtpPassword))
             {
                 throw new InvalidOperationException("未配置Email:Password，请检查appsettings.json配置");
             }
-            
+
             _senderEmail = _configuration["Email:SenderEmail"];
             if (string.IsNullOrEmpty(_senderEmail))
             {
                 throw new InvalidOperationException("未配置Email:SenderEmail，请检查appsettings.json配置");
             }
-            
+
             _senderName = _configuration["Email:SenderName"] ?? "校园交易系统";
             _enableSsl = bool.Parse(_configuration["Email:EnableSsl"] ?? "true");
         }

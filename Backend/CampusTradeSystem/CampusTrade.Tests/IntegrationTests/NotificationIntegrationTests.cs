@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.SignalR;
-using Moq;
-using Xunit;
+using CampusTrade.API.Models.Hubs;
 using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Services.Email;
-using CampusTrade.API.Models.Hubs;
 using CampusTrade.Tests.Helpers;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Xunit;
 
 namespace CampusTrade.Tests.IntegrationTests
 {

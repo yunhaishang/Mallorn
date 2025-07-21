@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using CampusTrade.API.Models.Entities;
-using CampusTrade.API.Utils.Notificate;
+using System.Threading.Tasks;
 using CampusTrade.API.Data;
+using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Services.Background;
+using CampusTrade.API.Utils.Notificate;
+using Microsoft.EntityFrameworkCore;
 
 namespace CampusTrade.API.Services.Auth
 {

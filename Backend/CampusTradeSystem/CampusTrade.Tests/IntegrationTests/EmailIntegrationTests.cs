@@ -2,11 +2,11 @@ using System;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using CampusTrade.API.Services.Email;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using CampusTrade.API.Services.Email;
 
 namespace CampusTrade.Tests.IntegrationTests
 {
@@ -72,7 +72,7 @@ namespace CampusTrade.Tests.IntegrationTests
             }
             catch (Exception ex)
             {
-                Assert.True(false, $"邮件发送失败：{ex.Message}");
+                Assert.Fail($"邮件发送失败：{ex.Message}");
             }
         }
 

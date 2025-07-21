@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CampusTrade.API.Data;
+using CampusTrade.API.Models.Entities;
+using CampusTrade.API.Models.Hubs;
+using CampusTrade.API.Services.Email;
+using CampusTrade.API.Utils.Notificate;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using CampusTrade.API.Models.Hubs;
-using CampusTrade.API.Models.Entities;
-using CampusTrade.API.Data;
-using CampusTrade.API.Services.Email;
-using CampusTrade.API.Utils.Notificate;
 
 namespace CampusTrade.API.Services.Auth
 {

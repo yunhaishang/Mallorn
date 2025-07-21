@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Xunit;
 using CampusTrade.API.Utils.Notificate;
+using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Utils
 {

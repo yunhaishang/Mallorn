@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
-using Moq;
-using Xunit;
 using CampusTrade.API.Data;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Utils.Notificate;
 using CampusTrade.Tests.Helpers;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Services
 {
