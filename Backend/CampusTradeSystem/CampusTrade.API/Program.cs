@@ -4,7 +4,7 @@ using CampusTrade.API.Data;
 using CampusTrade.API.Extensions;
 using CampusTrade.API.Middleware;
 using CampusTrade.API.Options;
-using CampusTrade.API.Services.BackgroundServices;
+using CampusTrade.API.Services.Background;
 using CampusTrade.API.Services.Cache;
 using CampusTrade.API.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -123,13 +123,13 @@ try
 
     // 添加JWT认证和Token服务
     builder.Services.AddJwtAuthentication(builder.Configuration);
-  
+
     // 添加后台服务
     builder.Services.AddBackgroundServices();
 
-    // 注册Signal
-    builder.Services.AddSignalR();
-  
+    // 添加SignalR支持
+    builder.Services.AddSignalRSupport();
+
     // 添加认证相关服务
     builder.Services.AddAuthenticationServices();
 
@@ -279,6 +279,9 @@ try
 
     // 映射控制器端点
     app.MapControllers();
+
+    // 映射SignalR Hub
+    app.MapHub<CampusTrade.API.Models.Hubs.NotificationHub>("/api/notification-hub");
 
     Log.Information("Campus Trade API 启动完成");
 

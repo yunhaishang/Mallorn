@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using CampusTrade.API.Services.Auth;
+using CampusTrade.API.Utils.Notificate;
 
 namespace CampusTrade.API.Controllers
 {

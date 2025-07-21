@@ -7,7 +7,7 @@ using CampusTrade.API;
 using CampusTrade.API.Data;
 using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.DTOs.Common;
-using CampusTrade.API.Services.BackgroundServices;
+using CampusTrade.API.Services.Background;
 using CampusTrade.Tests.Helpers;
 using FluentAssertions;
 using Microsoft.AspNetCore.Hosting;

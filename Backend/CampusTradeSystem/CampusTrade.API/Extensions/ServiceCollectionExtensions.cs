@@ -116,13 +116,28 @@ public static class ServiceCollectionExtensions
         // 注册通知服务
         services.AddScoped<Services.Auth.NotifiService>();
         services.AddScoped<Services.Auth.NotifiSenderService>();
-        
+
         // 注册邮件服务
         services.AddScoped<Services.Email.EmailService>();
 
         // 添加内存缓存（用于Token黑名单）
         services.AddMemoryCache();
         services.AddHttpContextAccessor();
+        return services;
+    }
+
+    /// <summary>
+    /// 添加SignalR支持
+    /// </summary>
+    public static IServiceCollection AddSignalRSupport(this IServiceCollection services)
+    {
+        services.AddSignalR(options =>
+        {
+            options.EnableDetailedErrors = true;
+            options.MaximumReceiveMessageSize = 32 * 1024; // 32KB
+            options.StreamBufferCapacity = 10;
+        });
+
         return services;
     }
 

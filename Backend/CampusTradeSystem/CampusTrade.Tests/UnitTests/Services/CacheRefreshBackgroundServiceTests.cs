@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using CampusTrade.API.Options;
-using CampusTrade.API.Services.BackgroundServices;
+using CampusTrade.API.Services.Background;
 using CampusTrade.API.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
