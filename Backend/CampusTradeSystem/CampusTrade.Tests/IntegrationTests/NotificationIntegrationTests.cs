@@ -49,7 +49,7 @@ namespace CampusTrade.Tests.IntegrationTests
                 config.Setup(x => x["Email:SmtpServer"]).Returns("smtp.test.com");
                 config.Setup(x => x["Email:SmtpPort"]).Returns("587");
                 config.Setup(x => x["Email:Username"]).Returns("test@test.com");
-                config.Setup(x => x["Email:Password"]).Returns("testpass");
+                config.Setup(x => x["Email:Password"]).Returns("fake-password-for-testing-only");
                 config.Setup(x => x["Email:SenderEmail"]).Returns("test@test.com");
                 config.Setup(x => x["Email:SenderName"]).Returns("Test");
                 config.Setup(x => x["Email:EnableSsl"]).Returns("true");
