@@ -4,6 +4,7 @@ using CampusTrade.API.Data;
 using CampusTrade.API.Extensions;
 using CampusTrade.API.Middleware;
 using CampusTrade.API.Options;
+using CampusTrade.API.Services.ScheduledTasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -87,6 +88,15 @@ builder.Services.AddFileManagementServices(builder.Configuration);
 
 // 配置 CORS
 builder.Services.AddCorsPolicy(builder.Configuration);
+
+// 注册定时任务服务
+builder.Services.AddHostedService<TokenCleanupTask>();
+builder.Services.AddHostedService<LogCleanupTask>();
+builder.Services.AddHostedService<ProductManagementTask>();
+builder.Services.AddHostedService<OrderProcessingTask>();
+builder.Services.AddHostedService<UserCreditScoreCalculationTask>();
+builder.Services.AddHostedService<StatisticalAnalysisTask>();
+builder.Services.AddHostedService<NotificationPushTask>();
 
 var app = builder.Build();
 
