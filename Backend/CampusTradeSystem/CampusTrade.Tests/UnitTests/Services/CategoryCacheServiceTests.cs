@@ -45,7 +45,7 @@ namespace CampusTrade.Tests.UnitTests.Services
             _categoryService = new CategoryCacheService(
                 _mockCacheService.Object,
                 _context,
-                _cacheOptions,
+                optionsMock.Object,
                 _mockLogger.Object
             );
         }
