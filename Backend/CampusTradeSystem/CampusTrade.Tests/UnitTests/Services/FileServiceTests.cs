@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text;
+using CampusTrade.API.Options;
 using CampusTrade.API.Services.File;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;

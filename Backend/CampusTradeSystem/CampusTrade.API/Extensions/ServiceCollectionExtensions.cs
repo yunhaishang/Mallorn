@@ -182,6 +182,7 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
+    /// <summary>
     /// 添加文件管理服务
     /// </summary>
     public static IServiceCollection AddFileManagementServices(this IServiceCollection services, IConfiguration configuration)
