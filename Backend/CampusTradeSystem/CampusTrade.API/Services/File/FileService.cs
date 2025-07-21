@@ -1,4 +1,5 @@
 using System.IO;
+using CampusTrade.API.Options;
 using Microsoft.Extensions.Options;
 
 namespace CampusTrade.API.Services.File
