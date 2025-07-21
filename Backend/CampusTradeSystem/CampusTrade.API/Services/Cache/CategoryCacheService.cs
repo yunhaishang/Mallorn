@@ -9,6 +9,7 @@ using CampusTrade.API.Services.Interfaces;
 using CampusTrade.API.Utils.Cache;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace CampusTrade.API.Services.Cache
 {
@@ -23,11 +24,11 @@ namespace CampusTrade.API.Services.Cache
         public CategoryCacheService(
             ICacheService cache,
             CampusTradeDbContext context,
-            CacheOptions options,
+            IOptions<CacheOptions> options,
             ILogger<CategoryCacheService> logger)
         {
             _cache = cache;
-            _options = options;
+            _options = options.Value;
             _context = context;
             _logger = logger;
         }
