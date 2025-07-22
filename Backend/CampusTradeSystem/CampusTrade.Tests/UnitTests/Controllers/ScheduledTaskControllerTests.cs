@@ -184,7 +184,7 @@ namespace CampusTrade.Tests.UnitTests.Controllers
         [InlineData("ProductManagementTask", "管理商品状态，自动下架过期商品")]
         [InlineData("OrderProcessingTask", "处理订单状态，自动取消超时订单")]
         [InlineData("UnknownTask", "定时任务")]
-        public void GetTaskDescription_ShouldReturnCorrectDescription(string taskName, string expectedDescription)
+        public void GetTaskDescription_ShouldReturnCorrectDescription(string expectedDescription)
         {
             // Act
             var result = _controller.GetTaskStatus();

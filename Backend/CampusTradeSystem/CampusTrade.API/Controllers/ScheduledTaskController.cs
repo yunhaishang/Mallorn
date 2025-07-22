@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Hosting;
-using CampusTrade.API.Models.DTOs.Common;
 using System.ComponentModel;
+using CampusTrade.API.Models.DTOs.Common;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace CampusTrade.API.Controllers
 {
