@@ -4,7 +4,7 @@ using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Options;
 using CampusTrade.API.Repositories.Interfaces;
-using CampusTrade.API.Utils.Security;
+using CampusTrade.API.Infrastructure.Utils.Security;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

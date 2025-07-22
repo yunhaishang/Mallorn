@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CampusTrade.API.Models.Hubs;
+using CampusTrade.API.Infrastructure.Hubs;
 using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Services.Email;
 using CampusTrade.Tests.Helpers;

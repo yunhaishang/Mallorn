@@ -1,7 +1,7 @@
 using System.Text.Json;
 using CampusTrade.API.Options;
 using CampusTrade.API.Services.Interfaces;
-using CampusTrade.API.Utils.Cache;
+using CampusTrade.API.Infrastructure.Utils.Cache;
 using Microsoft.Extensions.Options;
 
 namespace CampusTrade.API.Services.Cache;

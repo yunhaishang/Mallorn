@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using CampusTrade.API.Utils.Notificate;
+using CampusTrade.API.Infrastructure.Utils.Notificate;
 using Xunit;
 
 namespace CampusTrade.Tests.UnitTests.Utils
