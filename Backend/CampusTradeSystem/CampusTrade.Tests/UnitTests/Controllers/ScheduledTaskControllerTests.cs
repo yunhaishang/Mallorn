@@ -184,14 +184,13 @@ namespace CampusTrade.Tests.UnitTests.Controllers
         [InlineData("ProductManagementTask", "管理商品状态，自动下架过期商品")]
         [InlineData("OrderProcessingTask", "处理订单状态，自动取消超时订单")]
         [InlineData("UnknownTask", "定时任务")]
-        public void GetTaskDescription_ShouldReturnCorrectDescription(string expectedDescription)
+        public void GetTaskDescription_ShouldReturnCorrectDescription(string taskName, string expectedDescription)
         {
-            // Act
-            var result = _controller.GetTaskStatus();
-
-            // Assert
-            // 这里我们通过调用实际方法来间接测试私有方法的逻辑
-            result.Should().BeOfType<OkObjectResult>();
+            // 这里假设有一个私有方法 _controller.GetTaskDescription(string) 可用
+            // 如果没有，需要用反射调用
+            var method = typeof(ScheduledTaskController).GetMethod("GetTaskDescription", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var actualDescription = method?.Invoke(_controller, new object[] { taskName }) as string;
+            Assert.Equal(expectedDescription, actualDescription);
         }
 
         [Fact]
