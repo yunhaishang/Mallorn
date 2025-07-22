@@ -33,7 +33,7 @@ namespace CampusTrade.API.Services.ScheduledTasks
 
                 foreach (var product in productsToDeactivate)
                 {
-                    product.UpdateStatus(Product.ProductStatus.OffShelf);
+                    product.Status = Product.ProductStatus.OffShelf;
                 }
 
                 await context.SaveChangesAsync();
