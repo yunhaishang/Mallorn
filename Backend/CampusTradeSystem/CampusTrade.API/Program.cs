@@ -4,6 +4,7 @@ using CampusTrade.API.Data;
 using CampusTrade.API.Extensions;
 using CampusTrade.API.Middleware;
 using CampusTrade.API.Options;
+using CampusTrade.API.Services.ScheduledTasks;
 using CampusTrade.API.Services.Background;
 using CampusTrade.API.Services.Cache;
 using CampusTrade.API.Services.Interfaces;
@@ -129,6 +130,15 @@ try
 
     // 添加SignalR支持
     builder.Services.AddSignalRSupport();
+
+    // 注册定时任务服务
+    builder.Services.AddHostedService<TokenCleanupTask>();
+    builder.Services.AddHostedService<LogCleanupTask>();
+    builder.Services.AddHostedService<ProductManagementTask>();
+    builder.Services.AddHostedService<OrderProcessingTask>();
+    builder.Services.AddHostedService<UserCreditScoreCalculationTask>();
+    builder.Services.AddHostedService<StatisticalAnalysisTask>();
+    builder.Services.AddHostedService<NotificationPushTask>();
 
     // 添加认证相关服务
     builder.Services.AddAuthenticationServices();
