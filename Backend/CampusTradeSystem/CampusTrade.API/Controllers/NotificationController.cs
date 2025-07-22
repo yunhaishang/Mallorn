@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Infrastructure.Utils.Notificate;
+using CampusTrade.API.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 

@@ -1,10 +1,10 @@
+using CampusTrade.API.Infrastructure.Utils.Security;
 using CampusTrade.API.Options;
 using CampusTrade.API.Repositories.Implementations;
 using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Services.Background;
 using CampusTrade.API.Services.File;
-using CampusTrade.API.Infrastructure.Utils.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

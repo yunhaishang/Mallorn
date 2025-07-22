@@ -1,9 +1,9 @@
+using CampusTrade.API.Infrastructure.Utils;
+using CampusTrade.API.Infrastructure.Utils.Security;
 using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.API.Services.Interfaces;
-using CampusTrade.API.Infrastructure.Utils;
-using CampusTrade.API.Infrastructure.Utils.Security;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 

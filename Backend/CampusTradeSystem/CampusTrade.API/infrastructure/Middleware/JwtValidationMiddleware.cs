@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
-using CampusTrade.API.Services.Auth;
 using CampusTrade.API.Infrastructure.Utils.Security;
+using CampusTrade.API.Services.Auth;
 using Serilog;
 
 namespace CampusTrade.API.Infrastructure.Middleware;
