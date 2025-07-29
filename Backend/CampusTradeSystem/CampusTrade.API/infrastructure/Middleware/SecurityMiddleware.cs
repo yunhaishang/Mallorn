@@ -4,7 +4,7 @@ using CampusTrade.API.Models.DTOs.Common;
 using Microsoft.Extensions.Caching.Memory;
 using Serilog;
 
-namespace CampusTrade.API.Middleware;
+namespace CampusTrade.API.Infrastructure.Middleware;
 
 /// <summary>
 /// 安全检查中间件

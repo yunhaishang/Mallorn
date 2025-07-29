@@ -1,9 +1,12 @@
 using System.Text;
 using System.Text.Encodings.Web;
 using CampusTrade.API.Data;
-using CampusTrade.API.Extensions;
-using CampusTrade.API.Middleware;
+using CampusTrade.API.Infrastructure.Extensions;
+using CampusTrade.API.Infrastructure.Middleware;
 using CampusTrade.API.Options;
+using CampusTrade.API.Services.Background;
+using CampusTrade.API.Services.Cache;
+using CampusTrade.API.Services.Interfaces;
 using CampusTrade.API.Services.ScheduledTasks;
 using CampusTrade.API.Services.Background;
 using CampusTrade.API.Services.Cache;
@@ -291,7 +294,11 @@ try
     app.MapControllers();
 
     // 映射SignalR Hub
+<<<<<<< HEAD
     app.MapHub<CampusTrade.API.Models.Hubs.NotificationHub>("/api/notification-hub");
+=======
+    app.MapHub<CampusTrade.API.Infrastructure.Hubs.NotificationHub>("/api/notification-hub");
+>>>>>>> e3d18db1354a09976aa80917ad7087abb5ccdb94
 
     Log.Information("Campus Trade API 启动完成");
 

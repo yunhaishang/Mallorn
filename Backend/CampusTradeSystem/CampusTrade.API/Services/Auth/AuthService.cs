@@ -1,9 +1,17 @@
+<<<<<<< HEAD
+=======
+using CampusTrade.API.Infrastructure.Utils;
+using CampusTrade.API.Infrastructure.Utils.Security;
+>>>>>>> e3d18db1354a09976aa80917ad7087abb5ccdb94
 using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Repositories.Interfaces;
 using CampusTrade.API.Services.Interfaces;
+<<<<<<< HEAD
 using CampusTrade.API.Utils;
 using CampusTrade.API.Utils.Security;
+=======
+>>>>>>> e3d18db1354a09976aa80917ad7087abb5ccdb94
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 

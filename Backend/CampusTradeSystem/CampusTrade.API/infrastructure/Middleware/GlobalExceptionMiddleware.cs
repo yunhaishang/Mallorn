@@ -5,7 +5,7 @@ using CampusTrade.API.Models.DTOs.Common;
 using Serilog;
 using Serilog.Context;
 
-namespace CampusTrade.API.Middleware;
+namespace CampusTrade.API.Infrastructure.Middleware;
 
 /// <summary>
 /// 全局异常处理中间件

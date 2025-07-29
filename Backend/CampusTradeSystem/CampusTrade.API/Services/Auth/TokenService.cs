@@ -1,10 +1,17 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+<<<<<<< HEAD
+=======
+using CampusTrade.API.Infrastructure.Utils.Security;
+>>>>>>> e3d18db1354a09976aa80917ad7087abb5ccdb94
 using CampusTrade.API.Models.DTOs.Auth;
 using CampusTrade.API.Models.Entities;
 using CampusTrade.API.Options;
 using CampusTrade.API.Repositories.Interfaces;
+<<<<<<< HEAD
 using CampusTrade.API.Utils.Security;
+=======
+>>>>>>> e3d18db1354a09976aa80917ad7087abb5ccdb94
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;

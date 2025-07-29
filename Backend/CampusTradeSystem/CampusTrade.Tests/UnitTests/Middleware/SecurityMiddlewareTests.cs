@@ -1,7 +1,11 @@
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Threading.Tasks;
+<<<<<<< HEAD
 using CampusTrade.API.Middleware;
+=======
+using CampusTrade.API.Infrastructure.Middleware;
+>>>>>>> e3d18db1354a09976aa80917ad7087abb5ccdb94
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

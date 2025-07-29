@@ -1,9 +1,9 @@
+using System;
+using System.Threading.Tasks;
 using CampusTrade.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
 namespace CampusTrade.API.Services.ScheduledTasks
 {

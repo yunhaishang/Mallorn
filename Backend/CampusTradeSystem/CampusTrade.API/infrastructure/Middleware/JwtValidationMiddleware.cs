@@ -1,9 +1,13 @@
 using System.IdentityModel.Tokens.Jwt;
+using CampusTrade.API.Infrastructure.Utils.Security;
 using CampusTrade.API.Services.Auth;
+<<<<<<< HEAD:Backend/CampusTradeSystem/CampusTrade.API/Middleware/JwtValidationMiddleware.cs
 using CampusTrade.API.Utils.Security;
+=======
+>>>>>>> e3d18db1354a09976aa80917ad7087abb5ccdb94:Backend/CampusTradeSystem/CampusTrade.API/infrastructure/Middleware/JwtValidationMiddleware.cs
 using Serilog;
 
-namespace CampusTrade.API.Middleware;
+namespace CampusTrade.API.Infrastructure.Middleware;
 
 /// <summary>
 /// JWT验证中间件
